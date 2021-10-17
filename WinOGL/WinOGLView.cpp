@@ -62,22 +62,13 @@ void CWinOGLView::OnDraw(CDC* pDC)
 
 	wglMakeCurrent(pDC->m_hDC, m_hRC);
 
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT /* | GL_DEPTH_BUFFER_BIT */);
-
-	glColor3f(1.0, 1.0, 1.0);
-	glPointSize(20);
-	glBegin(GL_POINTS);
-	glVertex2f(World_X,World_Y);
-	
-	glEnd();
-
-
+	AC.OnDraw();
 
 	glFlush();
 	SwapBuffers(pDC->m_hDC);
 
 	wglMakeCurrent(pDC->m_hDC, NULL);
+
 }
 
 
@@ -117,15 +108,7 @@ void CWinOGLView::OnLButtonDown(UINT nFlags, CPoint point)
 	double Sx = (double)point.x / (double)rect.Width();
 	double Sy = 1.0 - (double)point.y / (double)rect.Height();
 
-	World_X = (Sx - 0.5) * 2 ;
-	World_Y = (Sy - 0.5) * 2 ;
-
-	if (width > height) {
-		World_X = World_X * ((double)width / (double)height);
-	}
-	else {
-		World_Y = World_Y * ((double)height / (double)width);
-	}
+	AC.OnClick(Sx, Sy, width, height);
 
 	RedrawWindow();
 
@@ -179,6 +162,8 @@ int CWinOGLView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void CWinOGLView::OnDestroy()
 {
 	CView::OnDestroy();
+
+	AC.FreeShape();
 
 	wglDeleteContext(m_hRC);
 }
