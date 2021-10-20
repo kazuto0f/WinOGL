@@ -12,6 +12,7 @@ public:
 	//ベクトルの計算
 	CVect CalcVect(CVertex, CVertex);
 	CVect CalcVect(CVertex*, CVertex*);
+	CVect CalcVect(double, double, double, double);
 
 	//外積の計算
 	double calcGaiseki(CVect, CVect);

@@ -2,6 +2,7 @@
 #include "AdminControl.h"
 #include "CShape.h"
 #include "CMath.h"
+#include "CVect.h"
 #include <math.h>
 #include<gl/GL.h>
 
@@ -64,7 +65,10 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 				ShapeHead->SSetXY(World_X, World_Y);
 				CheckClosed(ShapeHead);
 			}*/
-			CheckCrossShape(ShapeHead);
+			if (!CheckCrossShape(ShapeHead)) {
+				ShapeHead->SSetXY(World_X, World_Y);
+				CheckClosed(ShapeHead);
+			}
 		}
 	}
 	
@@ -88,7 +92,7 @@ void CAdminControl::FreeShape()
 void CAdminControl::CheckClosed(CShape* head)
 {
 	if (head != NULL) {
-		if (CM.euclid2p((head->GetSHead()->GetX()),(head->GetSHead()->GetY()), World_X, World_Y) < 0.06 ){
+		if (CM.euclid2p((head->GetStartVertex()->GetX()),(head->GetStartVertex()->GetY()), World_X, World_Y) < 0.06 ){
 			if (head->GetCount() > 3) {
 				head->SetClosed();
 			}
@@ -100,11 +104,11 @@ void CAdminControl::CheckClosed(CShape* head)
 bool CAdminControl::CheckCrossShape(CShape* head)
 {
 	CShape* now = head;
+	
 	for (; now != NULL; now = now->SGetNext()) {
 
-		if (!now->CheckCrossVertex(World_X, World_Y)) {
-			ShapeHead->SSetXY(World_X, World_Y);
-			CheckClosed(ShapeHead);
+		if (now->CheckCrossVertex(head->GetSHead()->GetX(), head->GetSHead()->GetY(), World_X, World_Y)) {
+			return true;
 		}
 	}
 	return false;

@@ -20,6 +20,10 @@ CVect CMath::CalcVect(CVertex* v1, CVertex* v2)
 {
 	return CVect(v2->GetX() - v1->GetX(), v2->GetY() - v1->GetY());
 }
+CVect CMath::CalcVect(double sx, double sy, double ex, double ey)
+{
+	return CVect(ex - sx, ey - sy);
+}
 
 //ŠOÏ‚ÌŒvZ
 double CMath::calcGaiseki(CVect v1, CVect v2)

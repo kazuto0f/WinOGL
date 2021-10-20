@@ -30,6 +30,8 @@ public:
 	void SetClosed();
 	//shapeの先頭を返却
 	CVertex* GetSHead();
+	//shapeの最初の点を返却
+	CVertex* GetStartVertex();
 	//頂点のXY座標を書き込む
 	void SSetXY(double,double);
 	//次の頂点リストを指すポインタを書き込む
@@ -46,5 +48,9 @@ public:
 	void SetStart();
 	//交差判定
 	bool CheckCrossVertex(double, double);
+	bool CheckCrossVertex(double, double, double, double);
+
+	//同じ点かどうかを判別
+	bool CheckSameVertex(CVertex*,CVertex*);
 };
 
