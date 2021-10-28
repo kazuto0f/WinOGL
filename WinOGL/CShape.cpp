@@ -9,6 +9,7 @@ CShape::CShape()
 	Start = NULL;
 	closed = false;
 	count = 0;
+	SSelected = false;
 }
 
 
@@ -24,16 +25,23 @@ int CShape::GetCount()
 
 void CShape::SetClosed()
 {
-	if (!CheckCrossVertex(Vertex_head->GetNext()->GetX(), Vertex_head->GetNext()->GetY(), Start->GetX(),Start->GetY())) {
+	if (!CheckCrossVertex(Vertex_head->GetNext()->GetX(), Vertex_head->GetNext()->GetY(), Start->GetX(), Start->GetY())) {
 		SetStart();
 		closed = true;
 	}
 	else {
-		CVertex* temp = NULL;
-		temp = Vertex_head->GetNext();
-		delete Vertex_head;
-		Vertex_head = temp;
+		if (CheckCrossVertex(Vertex_head->GetNext()->GetX(), Vertex_head->GetNext()->GetY(), Vertex_head->GetX(), Vertex_head->GetY())) {
+			CVertex* temp = NULL;
+			temp = Vertex_head->GetNext();
+			delete Vertex_head;
+			Vertex_head = temp;
+		}
 	}
+}
+
+void CShape::SetShead(CVertex* v)
+{
+	Vertex_head = v;
 }
 
 //shapeの先頭を返却
@@ -102,15 +110,15 @@ void CShape::ShapeFree()
 }
 
 //図形の描写
-void CShape::DrawShape()
+void CShape::DrawShape(float R, float G, float B)
 {
-	glColor3f(1.0, 1.0, 1.0);
-	glPointSize(20);
+	glColor3f(R,G,B);
+	glPointSize(6);
 
-	CVertex* nowV = Vertex_head;
-	CVertex* preV = Vertex_head;
+	CVertex* nowV = Vertex_head;	//今の頂点
+	CVertex* preV = Vertex_head;	//一つ前の頂点
 
-	while (nowV != NULL) {
+	while (nowV != NULL) {			//今の頂点がNULLになるまで繰り返す
 		glBegin(GL_POINTS);
 		glVertex2f(nowV->GetX(), nowV->GetY());
 		glEnd();
@@ -172,23 +180,25 @@ bool CShape::CheckCrossVertex(double sv_x, double sv_y, double ev_x, double ev_y
 	CVertex NewVS;
 	NewVS.SetXY(sv_x, sv_y);
 	NewVE.SetXY(ev_x, ev_y);
+
+	//ベクトルの登録
 	CVect a;
 	CVect a1;
 	CVect a2;
-	CVect b = CM.CalcVect(&NewVS, &NewVE);
+	CVect b = CM.CalcVect(&NewVS, &NewVE);	//判定目的のベクトル
 	CVect b1;
 	CVect b2;
 
-	if (count > 2) {
+	if (count > 2) {										//shapeの頂点数が2つ以上(nowVとpreVのため)
 		CVertex* nowV = Vertex_head;
 		CVertex* preV = nowV->GetNext();
-		for (; preV != NULL; preV = preV->GetNext()) {
-			if (CheckSameVertex(&NewVS, preV) ||			//同じ点か調べる
+		for (; preV != NULL; preV = preV->GetNext()) {		//preがNULLになるまで繰り返す
+			if (CheckSameVertex(&NewVS, preV) ||			//同じ点か調べる（ベクトルの交差判定の際に同じ点からのベクトル同士の判定をなくすため）
 				CheckSameVertex(&NewVS, nowV) ||
 				CheckSameVertex(&NewVE, preV) ||
 				CheckSameVertex(&NewVE, nowV)) 
 			{
-				nowV = nowV->GetNext();
+				nowV = nowV->GetNext();						//同じ点があるとき次のベクトルとの判定に進む
 				continue;
 			}
 
@@ -222,4 +232,38 @@ bool CShape::CheckSameVertex(CVertex* v1, CVertex* v2)
 	
 	return false;
 }
+
+//SHAPE内の近い点の判別
+CVertex* CShape::CheckSimilarVertex(double x, double y)
+{
+	for (CVertex* nowV = Vertex_head; nowV != NULL; nowV = nowV->GetNext()) {
+		if (CM.euclid2p(nowV->GetX(), nowV->GetY(), x, y) < 0.04) {
+			return nowV;
+		}
+	}
+	return NULL;
+}
+
+
+// //内外判定
+bool CShape::VCheckNaiGai(double x, double y)
+{
+	double sumAngle = 0;
+	CVertex CheckV;
+	CheckV.SetXY(x, y);
+
+	CVertex* nowV = Vertex_head;
+	CVertex* preV = Vertex_head->GetNext();
+	for (; preV != NULL; preV = preV->GetNext()) 
+	{
+		sumAngle += CM.calcAngle(&CheckV, nowV, &CheckV, preV);
+
+		nowV = nowV->GetNext();
+	}
+	if (abs(sumAngle) < 0.01)
+		return false;
+	return true;
+}
+
+
 

@@ -29,6 +29,9 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_DESTROY()
 	ON_WM_ERASEBKGND()
 	ON_WM_SIZE()
+	ON_COMMAND(ID_EDIT_MODE, &CWinOGLView::OnEditMode)
+	ON_COMMAND(ID_XYZ, &CWinOGLView::OnXyz)
+	ON_UPDATE_COMMAND_UI(ID_XYZ, &CWinOGLView::OnUpdateXyz)
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
@@ -199,4 +202,43 @@ void CWinOGLView::OnSize(UINT nType, int cx, int cy)
 	glMatrixMode(GL_MODELVIEW);
 	RedrawWindow();
 	wglMakeCurrent(clientDC.m_hDC, NULL);
+}
+
+
+void CWinOGLView::OnEditMode()
+{
+	if (AC.EditFlag == false) {
+		AC.EditFlag = true;
+	}
+	else if (AC.EditFlag == true) {
+		AC.EditFlag = false;
+	}
+	RedrawWindow();
+}
+
+
+void CWinOGLView::OnXyz()
+{
+	/*--------------------------------------------------------*/
+	/* CAdminControlクラスのメンバ変数AxisFlagの状態を切り替える*/
+	/*--------------------------------------------------------*/
+	if (AC.AxisFlag == false) {
+		AC.AxisFlag = true;
+	}
+	else if (AC.AxisFlag == true) {
+		AC.AxisFlag = false;
+	}
+	RedrawWindow();
+}
+
+
+void CWinOGLView::OnUpdateXyz(CCmdUI* pCmdUI)
+{
+	// AxisFlagがtrueのときボタンが沈む
+	if (AC.AxisFlag == true) {
+		pCmdUI->SetCheck(true);
+	}
+	else {
+		pCmdUI->SetCheck(false);
+	}
 }

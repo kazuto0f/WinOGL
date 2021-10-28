@@ -11,6 +11,14 @@ double CMath::calcNaiseki(CVertex v1, CVertex v2)
 	return (v1.GetX() * v2.GetX() + v1.GetY() * v2.GetY());
 }
 
+double CMath::calcNaiseki(CVect A, CVect B)
+{
+	return (A.GetXVec() * B.GetXVec() + A.GetYVec() * B.GetYVec());
+}
+
+
+
+
 //ベクトルの計算(始点、終点)
 CVect CMath::CalcVect(CVertex v1, CVertex v2)
 {
@@ -32,3 +40,10 @@ double CMath::calcGaiseki(CVect v1, CVect v2)
 }
 
 
+// //角度の計算{A ~ B}(始点、終点)
+double CMath::calcAngle(CVertex* As, CVertex* Ae, CVertex* Bs, CVertex* Be)
+{
+	CVect A = CalcVect(As, Ae);
+	CVect B = CalcVect(Bs, Be);
+	return atan2(calcGaiseki(A, B), calcNaiseki(A, B));
+}

@@ -50,6 +50,9 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnSize(UINT nType, int cx, int cy);	
+	afx_msg void OnEditMode();
+	afx_msg void OnXyz();
+	afx_msg void OnUpdateXyz(CCmdUI* pCmdUI);
 };
 
 #ifndef _DEBUG  // WinOGLView.cpp のデバッグ バージョン
