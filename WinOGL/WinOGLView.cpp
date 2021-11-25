@@ -32,13 +32,17 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_COMMAND(ID_EDIT_MODE, &CWinOGLView::OnEditMode)
 	ON_COMMAND(ID_XYZ, &CWinOGLView::OnXyz)
 	ON_UPDATE_COMMAND_UI(ID_XYZ, &CWinOGLView::OnUpdateXyz)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_MODE, &CWinOGLView::OnUpdateEditMode)
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
 
 CWinOGLView::CWinOGLView() noexcept
 {
-	// TODO: 構築コードをここに追加します。
+	LButtonDowned = false;
 
 }
 
@@ -102,6 +106,8 @@ CWinOGLDoc* CWinOGLView::GetDocument() const // デバッグ以外のバージ�
 //左マウスボタンクリック関数
 void CWinOGLView::OnLButtonDown(UINT nFlags, CPoint point)
 {
+	LButtonDowned = true;
+
 	CRect rect;
 	GetClientRect(rect); // 描画領域の大きさを取得
 
@@ -116,6 +122,29 @@ void CWinOGLView::OnLButtonDown(UINT nFlags, CPoint point)
 	RedrawWindow();
 
 	CView::OnLButtonDown(nFlags, point);
+}
+
+//左マウスボタンリリース関数
+void CWinOGLView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	LButtonDowned = false;
+
+	if (AC.EditFlag) {
+		CRect rect;
+		GetClientRect(rect); // 描画領域の大きさを取得
+
+		int width = rect.Width();
+		int height = rect.Height();
+
+		double Sx = (double)point.x / (double)rect.Width();
+		double Sy = 1.0 - (double)point.y / (double)rect.Height();
+
+		AC.OnUp(Sx, Sy, width, height);
+
+		RedrawWindow();
+
+		CView::OnLButtonUp(nFlags, point);
+	}
 }
 
 //右クリック関数
@@ -241,4 +270,48 @@ void CWinOGLView::OnUpdateXyz(CCmdUI* pCmdUI)
 	else {
 		pCmdUI->SetCheck(false);
 	}
+}
+
+
+void CWinOGLView::OnUpdateEditMode(CCmdUI* pCmdUI)
+{
+	if (AC.EditFlag == true) {
+		pCmdUI->SetCheck(true);
+	}
+	else {
+		pCmdUI->SetCheck(false);
+	}
+}
+
+
+//マウスを動かすと呼ばれる
+void CWinOGLView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (LButtonDowned) {
+		CRect rect;
+		GetClientRect(rect); // 描画領域の大きさを取得
+
+		int width = rect.Width();
+		int height = rect.Height();
+
+		double Sx = (double)point.x / (double)rect.Width();
+		double Sy = 1.0 - (double)point.y / (double)rect.Height();
+
+		AC.OnUp(Sx, Sy, width, height);
+
+		RedrawWindow();
+
+		CView::OnMouseMove(nFlags, point);
+	}
+	
+}
+
+//マウスボタンがダブルクリックされると呼ばれる
+void CWinOGLView::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	CRect rect;
+
+
+
+	CView::OnLButtonDblClk(nFlags, point);
 }

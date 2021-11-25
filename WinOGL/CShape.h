@@ -69,6 +69,9 @@ public:
 	//同じ点かどうかを判別
 	bool CheckSameVertex(CVertex*,CVertex*);
 
+	//同じ点のアドレスを返す
+	CVertex* GetSameVertex(double x, double y);
+
 	//近い点かどうか判別
 	CVertex* CheckSimilarVertex(double x, double y);
 

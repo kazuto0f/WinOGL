@@ -233,6 +233,17 @@ bool CShape::CheckSameVertex(CVertex* v1, CVertex* v2)
 	return false;
 }
 
+//“¯‚¶À•W‚Ì’¸“_‚ð•Ô‹p
+CVertex* CShape::GetSameVertex(double x, double y)
+{	
+	for (CVertex* now = GetSHead(); now != NULL; now = now->GetNext()) {
+		if ((now->GetX() == x) && (now->GetY() == y)) {
+			return now;
+		}
+	}
+	return 0;
+}
+
 //SHAPE“à‚Ì‹ß‚¢“_‚Ì”»•Ê
 CVertex* CShape::CheckSimilarVertex(double x, double y)
 {
@@ -264,6 +275,9 @@ bool CShape::VCheckNaiGai(double x, double y)
 		return false;
 	return true;
 }
+
+
+
 
 
 

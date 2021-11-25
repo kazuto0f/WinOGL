@@ -47,3 +47,24 @@ double CMath::calcAngle(CVertex* As, CVertex* Ae, CVertex* Bs, CVertex* Be)
 	CVect B = CalcVect(Bs, Be);
 	return atan2(calcGaiseki(A, B), calcNaiseki(A, B));
 }
+
+//点と直線の距離計算(絶対値)
+double CMath::calcDistancePL(CVect a, CVect b)
+{
+	double d = abs(calcGaiseki(a, b)) / sqrt(a.GetXVec() * a.GetXVec() + a.GetYVec() * a.GetYVec());
+	return d;
+}
+
+//座標をworld座標系に変換
+double CMath::ChangeWorld(double width, double height, double devi)
+{
+	devi = (devi - 0.5) * 2;
+
+	if (width > height) {
+		devi = devi * (width / height);
+	}
+	else {
+		devi = devi * (width / height);
+	}
+	return devi;
+}

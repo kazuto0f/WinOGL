@@ -16,6 +16,9 @@ protected: // シリアル化からのみ作成します。
 public:
 	CWinOGLDoc* GetDocument() const;
 
+	//マウスの左ボタンが押されているか
+	bool LButtonDowned;
+
 // 操作
 public:
 
@@ -53,6 +56,10 @@ public:
 	afx_msg void OnEditMode();
 	afx_msg void OnXyz();
 	afx_msg void OnUpdateXyz(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditMode(CCmdUI* pCmdUI);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 };
 
 #ifndef _DEBUG  // WinOGLView.cpp のデバッグ バージョン

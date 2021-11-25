@@ -18,7 +18,13 @@ public:
 	//外積の計算
 	double calcGaiseki(CVect, CVect);
 	
-	// //角度の計算
+	//角度の計算
 	double calcAngle(CVertex* As, CVertex* Ae, CVertex* Bs, CVertex* Be);
+
+	//点と直線の距離計算
+	double calcDistancePL(CVect a, CVect b);
+
+	//座標をworld座標系に変換
+	double ChangeWorld(double width, double height, double devi);
 };
 
