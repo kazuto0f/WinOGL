@@ -19,6 +19,9 @@ public:
 	//マウスリリースの関数
 	void OnUp(double x, double y, int width, int height);
 
+	//頂点の挿入
+	void insdelV(double x, double y, int width, int height);
+
 	//Shapeの解放
 	void FreeShape();
 

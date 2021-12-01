@@ -24,7 +24,7 @@ IMPLEMENT_DYNCREATE(CWinOGLView, CView)
 
 BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
+//	ON_WM_RBUTTONDOWN()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_ERASEBKGND()
@@ -36,6 +36,7 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONDBLCLK()
+	ON_WM_RBUTTONDOWN()
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
@@ -148,12 +149,12 @@ void CWinOGLView::OnLButtonUp(UINT nFlags, CPoint point)
 }
 
 //右クリック関数
-void CWinOGLView::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
-
-	CView::OnRButtonDown(nFlags, point);
-}
+//void CWinOGLView::OnRButtonDown(UINT nFlags, CPoint point)
+//{
+//	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
+//
+//	CView::OnRButtonDown(nFlags, point);
+//}
 
 
 int CWinOGLView::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -310,8 +311,34 @@ void CWinOGLView::OnMouseMove(UINT nFlags, CPoint point)
 void CWinOGLView::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	CRect rect;
+	GetClientRect(rect); // 描画領域の大きさを取得
 
+	int width = rect.Width();
+	int height = rect.Height();
 
+	double Sx = (double)point.x / (double)rect.Width();
+	double Sy = 1.0 - (double)point.y / (double)rect.Height();
+
+	AC.insdelV(Sx, Sy, width, height);
+
+	RedrawWindow();
 
 	CView::OnLButtonDblClk(nFlags, point);
+}
+
+
+void CWinOGLView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	CRect rect;
+	GetClientRect(rect); // 描画領域の大きさを取得
+
+	int width = rect.Width();
+	int height = rect.Height();
+
+	double Sx = (double)point.x / (double)rect.Width();
+	double Sy = 1.0 - (double)point.y / (double)rect.Height();
+
+	RedrawWindow();
+
+	CView::OnRButtonDown(nFlags, point);
 }

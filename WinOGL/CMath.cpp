@@ -55,6 +55,9 @@ double CMath::calcDistancePL(CVect a, CVect b)
 	return d;
 }
 
+
+
+
 //À•W‚ğworldÀ•WŒn‚É•ÏŠ·
 double CMath::ChangeWorld(double width, double height, double devi)
 {

@@ -211,8 +211,121 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 				}
 			}
 		}
-		//選択頂点の初期化
-		selectedV == NULL;
+	}
+}
+
+//頂点の挿入,削除
+void CAdminControl::insdelV(double x, double y, int width, int height)
+{
+	if (EditFlag) {
+
+		//デバイスの座標からworld座標系に変換
+		World_X = (x - 0.5) * 2;
+		World_Y = (y - 0.5) * 2;
+
+		CShape* taisyouS = NULL;
+
+		//画面の比からworld座標を修正
+		if (width > height) {
+			World_X = World_X * ((double)width / (double)height);
+		}
+		else {
+			World_Y = World_Y * ((double)height / (double)width);
+		}
+
+		if (selectedL != NULL) {
+			//選択された辺とクリックした点のベクトルを計算
+			CVect hen = CM.CalcVect(selectedL, selectedL->GetNext());
+			CVect ten = CM.CalcVect(selectedL->GetX(), selectedL->GetY(), World_X, World_Y);
+
+			//クリック座標と選択された線分のユークリッド距離が0.03より小さいとき
+			if (CM.calcDistancePL(hen, ten) < 0.03) {
+
+				//追加する頂点を生成
+				CVertex* New = new CVertex();
+
+				CVect va = CM.CalcVect(selectedL,selectedL->GetNext());
+				CVect vb = CM.CalcVect(selectedL->GetX(),selectedL->GetY(),World_X,World_Y);
+
+				double s = (CM.calcNaiseki(vb, va) / CM.calcNaiseki(va, va));
+				double t = 1 - s;
+
+				//
+				CVect a;
+				a.setX(selectedL->GetNext()->GetX());
+				a.setY(selectedL->GetNext()->GetY());
+
+				CVect b;
+				b.setX(selectedL->GetX());
+				b.setY(selectedL->GetY());
+
+				a.vectTimes(s);
+				b.vectTimes(t);
+
+				CVect q;
+				q.setX(a.GetXVec() + b.GetXVec());
+				q.setY(a.GetYVec() + b.GetYVec());
+
+				New->SetXY(q.GetXVec(), q.GetYVec());
+			
+				New->SetNext(selectedL->GetNext());
+				selectedL->SetNext(New);
+
+				selectedL = NULL;
+			}
+		}
+		else if(selectedV != NULL){
+			//クリック座標と最も近い頂点を返却
+			CVertex* taisyouV =  CheckSameVertex();
+
+			//同じ座標かチェック
+			if (CM.euclid2p(taisyouV->GetX(),taisyouV->GetY(),World_X,World_Y) < 0.03) {
+				
+				CVertex* preV = NULL;
+				//taisyouSに変更しようとしている頂点を含むshapeを入れる
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (nowV->GetX() == taisyouV->GetX(), nowV->GetY() == taisyouV->GetY()) {
+							taisyouS = nowS;
+							break;
+						}
+						preV = nowV;
+					}
+				}
+
+				if (taisyouS->GetCount() > 2) {
+
+					//消そうとしている座標がヘッドの時
+					if (taisyouS->GetSHead()->GetX() == taisyouV->GetX() && taisyouS->GetSHead()->GetY() == taisyouV->GetY()) {
+
+					}
+					else {
+						preV->SetNext(taisyouV->GetNext());
+
+						delete taisyouV;
+						
+						////すべての頂点で内外判定
+						//for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+						//	for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						//		if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+						//			//内外判定に引っかかったら頂点を元に戻す
+						//			
+						//			//選択頂点の初期化
+						//			selectedV == NULL;
+						//			break;
+						//		}
+						//	}
+						//}
+					}
+				}
+
+				
+			}
+			else {
+				taisyouV = NULL;
+				tais
+			}
+		}
 	}
 }
 
