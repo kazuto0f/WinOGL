@@ -16,6 +16,12 @@ public:
 	//クリック座標の保存
 	void OnClick(double,double,int,int);
 
+	//マウスを動かすと呼ばれる
+	void mouseMove(double x, double y, int width, int height);
+
+	//拡大関数
+	void mouseWheel(short wheel);
+
 	//マウスリリースの関数
 	void OnUp(double x, double y, int width, int height);
 
@@ -48,6 +54,9 @@ private:
 	//選択される稜線(2つvertexの初めの方)
 	CVertex* selectedL;
 
+	//拡大に使用する基点
+	CVertex* basePoint;
+
 private:
 	CShape Shape;
 	CShape* ShapeHead;
@@ -65,9 +74,9 @@ public:
 	void CheckShapeSelect();
 	//稜線の選択
 	void LineSelect();
-	
-	//マウスを動かすと呼ばれる
-	void mouseMove(double x, double y, int width, int height);
+	//基点の追加
+	void addBasePoint(double x, double y);
+
 };
 
 

@@ -21,6 +21,8 @@ private:
 	int count;
 	//形状が選択されているのか
 	bool SSelected;
+	//拡大に使用する基点
+	CVertex basePoint;
 
 	CMath CM;
 
@@ -28,6 +30,9 @@ private:
 public:
 	//カウンタを返却
 	int GetCount();
+
+	//カウンタをセット
+	void SetCount(int t);
 
 	//closedにする
 	void SetClosed();
@@ -61,6 +66,9 @@ public:
 
 	//点をスタート位置に設定
 	void SetStart();
+
+	//スタート位置を変更
+	void ChangeStart(CVertex* n);
 
 	//交差判定
 	bool CheckCrossVertex(double, double);

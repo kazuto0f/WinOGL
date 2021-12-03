@@ -23,6 +23,12 @@ int CShape::GetCount()
 	return count;
 }
 
+//カウンタをセット
+void CShape::SetCount(int t)
+{
+	count = t;
+}
+
 void CShape::SetClosed()
 {
 	if (!CheckCrossVertex(Vertex_head->GetNext()->GetX(), Vertex_head->GetNext()->GetY(), Start->GetX(), Start->GetY())) {
@@ -135,6 +141,12 @@ void CShape::DrawShape(float R, float G, float B)
 void CShape::SetStart()
 {
 	Vertex_head->SetXY(Start->GetX(), Start->GetY());
+}
+
+//スタート位置を変更
+void CShape::ChangeStart(CVertex* n)
+{
+	Start = n;
 }
 
 //交差判定

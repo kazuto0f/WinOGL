@@ -17,6 +17,7 @@ CAdminControl::CAdminControl()
 	selectedV = NULL;
 	selectedS = NULL;
 	selectedL = NULL;
+	basePoint = NULL;
 }
 
 CAdminControl::~CAdminControl()
@@ -67,11 +68,19 @@ void CAdminControl::OnDraw() {
 			glVertex2f(selectedL->GetNext()->GetX(), selectedL->GetNext()->GetY());
 			glEnd();
 		}
+		if (basePoint != NULL) {
+			glPointSize(6);
+			glBegin(GL_POINTS);
+			glColor3f(1.0, 0.0, 1.0);
+			glVertex2f(basePoint->GetX(), basePoint->GetY());
+			glEnd();
+		}
 	}
 	else {	//editFlagがオフの時選択を解除
 		selectedV = NULL;
 		selectedS = NULL;
 		selectedL = NULL;
+		basePoint = NULL;
 	}
 }
 
@@ -110,7 +119,6 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 				if (CM.euclid2p(temp_x, temp_y, World_X, World_Y) > 0.03) {
 					//選択頂点をドロップ地点の座標に設定
 					selectedV->SetXY(World_X, World_Y);
-
 
 					//taisyouSに変更しようとしている頂点を含むshapeを入れる
 					for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
@@ -218,6 +226,8 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 void CAdminControl::insdelV(double x, double y, int width, int height)
 {
 	if (EditFlag) {
+		//戻すかを判別するフラグ
+		bool ret = false;
 
 		//デバイスの座標からworld座標系に変換
 		World_X = (x - 0.5) * 2;
@@ -234,6 +244,17 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 		}
 
 		if (selectedL != NULL) {
+			//taisyouSに変更しようとしている頂点を含むshapeを入れる
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					if (nowV->GetX() == selectedL->GetX(), nowV->GetY() == selectedL->GetY()) {
+						taisyouS = nowS;
+						break;
+					}
+				}
+				if (taisyouS != NULL)	break;
+			}
+
 			//選択された辺とクリックした点のベクトルを計算
 			CVect hen = CM.CalcVect(selectedL, selectedL->GetNext());
 			CVect ten = CM.CalcVect(selectedL->GetX(), selectedL->GetY(), World_X, World_Y);
@@ -271,61 +292,132 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 				New->SetNext(selectedL->GetNext());
 				selectedL->SetNext(New);
 
+				taisyouS->SetCount(taisyouS->GetCount() + 1);
+
 				selectedL = NULL;
 			}
 		}
-		else if(selectedV != NULL){
+		else if (selectedV != NULL) {
+
 			//クリック座標と最も近い頂点を返却
-			CVertex* taisyouV =  CheckSameVertex();
+			CVertex* preV = NULL;
 
-			//同じ座標かチェック
-			if (CM.euclid2p(taisyouV->GetX(),taisyouV->GetY(),World_X,World_Y) < 0.03) {
-				
-				CVertex* preV = NULL;
-				//taisyouSに変更しようとしている頂点を含むshapeを入れる
-				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-						if (nowV->GetX() == taisyouV->GetX(), nowV->GetY() == taisyouV->GetY()) {
-							taisyouS = nowS;
-							break;
-						}
-						preV = nowV;
+			//taisyouSに変更しようとしている頂点を含むshapeを入れる
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				preV = nowS->GetSHead();
+				for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					if (nowV->GetX() == selectedV->GetX(), nowV->GetY() == selectedV->GetY()) {
+						taisyouS = nowS;
+						break;
 					}
+					preV = nowV;
 				}
+				if (taisyouS != NULL)	break;
+			}
 
-				if (taisyouS->GetCount() > 2) {
+			//形状の最終の一つ前をPreEndに入れる
+			CVertex* PreEnd = NULL;
+			for (CVertex* nowV = taisyouS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+				if (nowV->GetNext()->GetNext() == NULL) {
+					PreEnd = nowV;
+				}
+			}
 
-					//消そうとしている座標がヘッドの時
-					if (taisyouS->GetSHead()->GetX() == taisyouV->GetX() && taisyouS->GetSHead()->GetY() == taisyouV->GetY()) {
+			if (taisyouS->GetCount() > 4) {
+				//消そうとしている座標がヘッドの時
+				if (taisyouS->GetSHead()->GetX() == selectedV->GetX() && taisyouS->GetSHead()->GetY() == selectedV->GetY()) {
 
+					//頂点ヘッド,終点の一時保存
+					CVertex* tempHead = taisyouS->GetSHead();
+					CVertex* tempEnd = PreEnd->GetNext();
+
+					//形状のヘッドを一つずらす
+					taisyouS->SetShead(taisyouS->GetSHead()->GetNext());
+
+					//（頂点挿入）新しいヘッドに新しい終点を生成しつなげる
+					CVertex* New = new CVertex();
+					New->SetXY(taisyouS->GetSHead()->GetX(), taisyouS->GetSHead()->GetY());
+					PreEnd->SetNext(New);
+					
+					//形状の頂点数の再設定
+					taisyouS->SetCount(taisyouS->GetCount() - 1);
+
+					//内外判定
+					for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+						for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+							if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+								//内外判定がtrueの時
+
+								//頂点の数を戻す
+								taisyouS->SetCount(taisyouS->GetCount() + 1);
+								//終点を戻す
+								PreEnd->SetNext(tempEnd);
+								//ヘッドを戻す
+								taisyouS->SetShead(tempHead);
+								//追加した頂点の削除
+								delete New;
+								//内外判定に入ったフラグ
+								ret = true;
+							}
+						}
+					}
+
+					//内外判定がfalseのとき自己交差判定
+					if (!ret) {
+						if (taisyouS->CheckCrossVertex(PreEnd->GetX(), PreEnd->GetY(), preV->GetX(), preV->GetY()) == true)
+							ret = true;
+					}
+
+				//削除系の処理
+					if (ret == true) {
+						delete New;
 					}
 					else {
-						preV->SetNext(taisyouV->GetNext());
-
-						delete taisyouV;
-						
-						////すべての頂点で内外判定
-						//for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-						//	for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-						//		if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-						//			//内外判定に引っかかったら頂点を元に戻す
-						//			
-						//			//選択頂点の初期化
-						//			selectedV == NULL;
-						//			break;
-						//		}
-						//	}
-						//}
+						delete tempHead;
+						delete preV;
 					}
 				}
+				else {
 
-				
-			}
-			else {
-				taisyouV = NULL;
-				tais
+					//頂点の挿入
+					preV->SetNext(selectedV->GetNext());
+					//頂点数の再設定
+					taisyouS->SetCount(taisyouS->GetCount() - 1);
+
+					//内外判定
+					for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+						for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+							if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+								//内外判定がtrueの時
+
+								//頂点の数を戻す
+								taisyouS->SetCount(taisyouS->GetCount() + 1);
+								//選択した頂点をリストに戻す
+								preV->SetNext(selectedV);
+								//内外判定に入ったフラグ
+								ret = true;
+							}
+						}
+					}
+
+					//内外判定がfalseのとき自己交差判定
+					if (!ret) {
+						if (taisyouS->CheckCrossVertex(preV->GetX(), preV->GetY(), preV->GetNext()->GetX(), preV->GetNext()->GetY()) == true)
+							ret = true;
+					}
+
+					//削除系の処理
+					if (!ret) {
+						delete selectedV;
+					}
+					else {
+						preV->SetNext(selectedV);
+						taisyouS->SetCount(taisyouS->GetCount() + 1);
+					}
+				}
 			}
 		}
+		selectedV = NULL;
 	}
 }
 
@@ -351,6 +443,7 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 		selectedV = NULL;
 		selectedL = NULL;
 		selectedS = NULL;
+		
 		//shapeが何もないとき
 		if (ShapeHead == NULL) {
 			EditFlag = false;
@@ -363,6 +456,9 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 			}
 			if (selectedL == NULL && selectedV == NULL)	{	//頂点、稜線が選択されていないときに形状の選択ができる
 				CheckShapeSelect();
+			}
+			if (selectedS != NULL) {
+				addBasePoint(World_X, World_Y);
 			}
 		}
 	}
@@ -404,6 +500,90 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 						CheckClosed();
 					}
 				}
+			}
+		}
+	}
+}
+
+// マウスを動かすと呼ばれる
+void CAdminControl::mouseMove(double x, double y, int width, int height)
+{
+	//内外または交差判定を入れる
+	bool ret = false;
+	//形状が選択されている時
+	if (selectedS != NULL) {
+
+		//デバイスの座標からworld座標系に変換
+		Cursor_Pos_X = (x - 0.5) * 2;
+		Cursor_Pos_Y = (y - 0.5) * 2;
+
+		//画面の比からworld座標を修正
+		if (width > height) {
+			Cursor_Pos_X = Cursor_Pos_X * ((double)width / (double)height);
+		}
+		else {
+			Cursor_Pos_Y = Cursor_Pos_Y * ((double)height / (double)width);
+		}
+
+		//図形の中心座標を計算
+		double tx = selectedS->GetSHead()->GetX();
+		double ty = selectedS->GetSHead()->GetY();
+		for (CVertex* nowV = selectedS->GetSHead()->GetNext(); nowV != NULL; nowV = nowV->GetNext()) {
+			tx += nowV->GetX();
+			ty += nowV->GetY();
+		}
+		tx = tx / selectedS->GetCount();
+		ty = ty / selectedS->GetCount();
+
+
+
+		//座標に中心座標とマウス座標の差を足す
+		for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+			nowV->SetX(nowV->GetX() + (Cursor_Pos_X - tx));
+			nowV->SetY(nowV->GetY() + (Cursor_Pos_Y - ty));
+		}
+
+		//内外判定
+		for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+			for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+				if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+					ret = true;
+					break;
+				}
+			}
+			if (ret)	break;
+		}
+
+		//交差判定
+		for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+			for (CVertex* nowV = nowS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+				if (nowS->SGetNext()->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
+					ret = true;
+					break;
+				}
+			}
+			if (ret)	break;
+		}
+
+		if (ret) {
+			for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+				nowV->SetX(nowV->GetX() - (Cursor_Pos_X - tx));
+				nowV->SetY(nowV->GetY() - (Cursor_Pos_Y - ty));
+			}
+		}
+	}
+
+}
+
+//拡大関数
+void CAdminControl::mouseWheel(short wheel)
+{
+	if (selectedS != NULL) {
+		if (basePoint != NULL) {
+			for (CVertex* nowV = selectedS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+				CVect V = CM.CalcVect(basePoint, nowV);
+				nowV->SetX(nowV->GetX() + V.GetXVec());
+				nowV->SetY(nowV->GetY() + V.GetYVec());
 			}
 		}
 	}
@@ -600,23 +780,14 @@ void CAdminControl::LineSelect()
 	}
 }
 
-
-//マウスを動かすと呼ばれる
-void CAdminControl::mouseMove(double x, double y, int width, int height)
+//基点の追加
+void CAdminControl::addBasePoint(double x, double y)
 {
-	//デバイスの座標からworld座標系に変換
-	Cursor_Pos_X = (x - 0.5) * 2;
-	Cursor_Pos_Y = (y - 0.5) * 2;
-
-	//画面の比からworld座標を修正
-	if (width > height) {
-		Cursor_Pos_X = Cursor_Pos_X * ((double)width / (double)height);
+	if (selectedS != NULL) {
+		CVertex* New = new CVertex();
+		basePoint = New;
 	}
-	else {
-		Cursor_Pos_Y = Cursor_Pos_Y * ((double)height / (double)width);
-	}
-
-	/*if (ShapeHead != NULL) {
-		if(ShapeHead)
-	}*/
 }
+
+
+

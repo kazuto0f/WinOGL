@@ -37,6 +37,7 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_RBUTTONDOWN()
+	ON_WM_MOUSEHWHEEL()
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
@@ -300,6 +301,8 @@ void CWinOGLView::OnMouseMove(UINT nFlags, CPoint point)
 
 		AC.OnUp(Sx, Sy, width, height);
 
+		AC.mouseMove(Sx, Sy, width, height);
+
 		RedrawWindow();
 
 		CView::OnMouseMove(nFlags, point);
@@ -341,4 +344,24 @@ void CWinOGLView::OnRButtonDown(UINT nFlags, CPoint point)
 	RedrawWindow();
 
 	CView::OnRButtonDown(nFlags, point);
+}
+
+
+//マウスホイールで呼ばれる
+void CWinOGLView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	CRect rect;
+	GetClientRect(rect); // 描画領域の大きさを取得
+
+	int width = rect.Width();
+	int height = rect.Height();
+
+	double Sx = (double)pt.x / (double)rect.Width();
+	double Sy = 1.0 - (double)pt.y / (double)rect.Height();
+
+	AC.mouseWheel(zDelta / 15);
+
+	RedrawWindow();
+
+	CView::OnMouseHWheel(nFlags, zDelta, pt);
 }
