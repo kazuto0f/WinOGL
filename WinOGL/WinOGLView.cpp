@@ -38,6 +38,7 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEHWHEEL()
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
@@ -282,6 +283,7 @@ void CWinOGLView::OnUpdateEditMode(CCmdUI* pCmdUI)
 	}
 	else {
 		pCmdUI->SetCheck(false);
+		AC.resetSelect();
 	}
 }
 
@@ -332,36 +334,62 @@ void CWinOGLView::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void CWinOGLView::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	CRect rect;
-	GetClientRect(rect); // 描画領域の大きさを取得
+	if (AC.EditFlag) {
+		CRect rect;
+		GetClientRect(rect); // 描画領域の大きさを取得
 
-	int width = rect.Width();
-	int height = rect.Height();
+		int width = rect.Width();
+		int height = rect.Height();
 
-	double Sx = (double)point.x / (double)rect.Width();
-	double Sy = 1.0 - (double)point.y / (double)rect.Height();
+		double Sx = (double)point.x / (double)rect.Width();
+		double Sy = 1.0 - (double)point.y / (double)rect.Height();
 
-	RedrawWindow();
+		AC.SetBasePoint(Sx,Sy,width,height);
 
-	CView::OnRButtonDown(nFlags, point);
+		RedrawWindow();
+
+		CView::OnRButtonDown(nFlags, point);
+	}
 }
 
 
 //マウスホイールで呼ばれる
 void CWinOGLView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-	CRect rect;
-	GetClientRect(rect); // 描画領域の大きさを取得
+	if (AC.EditFlag && AC.GetBasePoint()) {
+		CRect rect;
+		GetClientRect(rect); // 描画領域の大きさを取得
 
-	int width = rect.Width();
-	int height = rect.Height();
+		int width = rect.Width();
+		int height = rect.Height();
 
-	double Sx = (double)pt.x / (double)rect.Width();
-	double Sy = 1.0 - (double)pt.y / (double)rect.Height();
+		double Sx = (double)pt.x / (double)rect.Width();
+		double Sy = 1.0 - (double)pt.y / (double)rect.Height();
 
-	AC.mouseWheel(zDelta / 15);
+		AC.mouseWheel(zDelta / 15);
 
-	RedrawWindow();
+		RedrawWindow();
 
-	CView::OnMouseHWheel(nFlags, zDelta, pt);
+		CView::OnMouseHWheel(nFlags, zDelta, pt);
+	}
+}
+
+//マウスホイールで呼ばれる
+BOOL CWinOGLView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	if (AC.EditFlag && AC.GetBasePoint()) {
+		CRect rect;
+		GetClientRect(rect); // 描画領域の大きさを取得
+
+		int width = rect.Width();
+		int height = rect.Height();
+
+		double Sx = (double)pt.x / (double)rect.Width();
+		double Sy = 1.0 - (double)pt.y / (double)rect.Height();
+
+		AC.mouseWheel(zDelta / 60);
+
+		RedrawWindow();
+	}
+	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }

@@ -23,6 +23,9 @@ CAdminControl::CAdminControl()
 CAdminControl::~CAdminControl()
 {
 	FreeShape();
+	if (basePoint != NULL) {
+		delete basePoint;
+	}
 }
 
 
@@ -30,12 +33,12 @@ CAdminControl::~CAdminControl()
 void CAdminControl::OnDraw() {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT /* | GL_DEPTH_BUFFER_BIT */);
-	
+
 	CShape* nowS = ShapeHead;
 	CShape* preS = ShapeHead;
 
 	while (nowS != NULL) {
-		nowS->DrawShape(1.0,1.0,1.0);
+		nowS->DrawShape(1.0, 1.0, 1.0);
 		preS = nowS;
 		nowS = nowS->SGetNext();
 	}
@@ -69,19 +72,20 @@ void CAdminControl::OnDraw() {
 			glEnd();
 		}
 		if (basePoint != NULL) {
-			glPointSize(6);
 			glBegin(GL_POINTS);
 			glColor3f(1.0, 0.0, 1.0);
 			glVertex2f(basePoint->GetX(), basePoint->GetY());
 			glEnd();
 		}
 	}
-	else {	//editFlagがオフの時選択を解除
-		selectedV = NULL;
-		selectedS = NULL;
-		selectedL = NULL;
-		basePoint = NULL;
-	}
+	//else {	//editFlagがオフの時選択を解除
+	//	selectedV = NULL;
+	//	selectedS = NULL;
+	//	selectedL = NULL;
+	//	/*if (ShapeHead != NULL || selectedS->GetBasePoint() != NULL) {
+	//		delete selectedS->GetBasePoint();
+	//	}*/
+//}
 }
 
 void CAdminControl::OnUp(double x, double y, int width, int height)
@@ -449,20 +453,20 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 			EditFlag = false;
 		}
 		else {
-		//すべての図形の頂点の中である閾値以下の一番近い点を返却
+			//すべての図形の頂点の中である閾値以下の一番近い点を返却
 			selectedV = CheckSameVertex();						//頂点、稜線、形状の順に優先度
 			if (selectedV == NULL) {	//頂点が選択されていないときに稜線の選択ができる
 				LineSelect();
 			}
-			if (selectedL == NULL && selectedV == NULL)	{	//頂点、稜線が選択されていないときに形状の選択ができる
+			if (selectedL == NULL && selectedV == NULL) {	//頂点、稜線が選択されていないときに形状の選択ができる
 				CheckShapeSelect();
-			}
-			if (selectedS != NULL) {
-				addBasePoint(World_X, World_Y);
 			}
 		}
 	}
 	else{
+		//基点のリセット
+		delete basePoint;
+		basePoint = NULL;
 
 		//ShapeのヘッドがNULLの時はshapeを新しく生成
 		if (ShapeHead == NULL) {
@@ -544,7 +548,7 @@ void CAdminControl::mouseMove(double x, double y, int width, int height)
 		}
 
 		//内外判定
-		for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+		for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 			for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 				if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
 					ret = true;
@@ -555,12 +559,15 @@ void CAdminControl::mouseMove(double x, double y, int width, int height)
 		}
 
 		//交差判定
-		for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+		for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 			for (CVertex* nowV = nowS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
-				if (nowS->SGetNext()->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
-					ret = true;
-					break;
+				for (CShape* checkS = ShapeHead; checkS != NULL; checkS = checkS->SGetNext()) {
+					if (checkS->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
+						ret = true;
+						break;
+					}
 				}
+				if (ret)	break;
 			}
 			if (ret)	break;
 		}
@@ -578,12 +585,47 @@ void CAdminControl::mouseMove(double x, double y, int width, int height)
 //拡大関数
 void CAdminControl::mouseWheel(short wheel)
 {
+	bool ret = false;
+
 	if (selectedS != NULL) {
 		if (basePoint != NULL) {
-			for (CVertex* nowV = selectedS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
-				CVect V = CM.CalcVect(basePoint, nowV);
-				nowV->SetX(nowV->GetX() + V.GetXVec());
-				nowV->SetY(nowV->GetY() + V.GetYVec());
+			for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+				if (wheel > 0) {
+					CVect V = CM.CalcVect(basePoint, nowV);
+					nowV->SetX(1.03 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
+					nowV->SetY(1.03 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
+				}
+				else {
+					CVect V = CM.CalcVect(basePoint, nowV);
+					nowV->SetX(0.97 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
+					nowV->SetY(0.97 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
+				}
+			}
+
+			// 内外判定
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+						ret = true;
+						break;
+					}
+				}
+				if (ret)	break;
+			}
+
+			if (ret) {
+				for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					if (wheel > 0) {
+						CVect V = CM.CalcVect(basePoint, nowV);
+						nowV->SetX(0.97 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
+						nowV->SetY(0.97 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
+					}
+					else {
+						CVect V = CM.CalcVect(basePoint, nowV);
+						nowV->SetX(1.03 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
+						nowV->SetY(1.03 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
+					}
+				}
 			}
 		}
 	}
@@ -780,12 +822,49 @@ void CAdminControl::LineSelect()
 	}
 }
 
-//基点の追加
-void CAdminControl::addBasePoint(double x, double y)
+//選択のリセット
+void CAdminControl::resetSelect()
+{	
+	if (basePoint != NULL) {
+		delete basePoint;
+	}
+	basePoint = NULL;
+	selectedV = NULL;
+	selectedL = NULL;
+	selectedS = NULL;
+}
+
+//基点の設定
+void CAdminControl::SetBasePoint(double x, double y, int width, int height)
 {
-	if (selectedS != NULL) {
-		CVertex* New = new CVertex();
-		basePoint = New;
+	//デバイスの座標からworld座標系に変換
+	x = (x - 0.5) * 2;
+	y = (y - 0.5) * 2;
+
+	//画面の比からworld座標を修正
+	if (width > height) {
+		x = x * ((double)width / (double)height);
+	}
+	else {
+		y = y * ((double)height / (double)width);
+	}
+
+	if (basePoint != NULL) {
+		delete basePoint;
+		basePoint = NULL;
+	}
+	CVertex* New = new CVertex();
+	New->SetXY(x, y);
+	basePoint = New;
+}
+
+//基点の返却
+bool CAdminControl::GetBasePoint() {
+	if (basePoint != NULL) {
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 

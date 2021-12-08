@@ -11,6 +11,8 @@ public:
 private:
 	//図形の始点
 	CVertex* Start;
+	//図形の終点
+	CVertex* End;
 	//図形が閉じているか
 	bool closed;
 	//次の図形を示すポインタ
@@ -21,8 +23,6 @@ private:
 	int count;
 	//形状が選択されているのか
 	bool SSelected;
-	//拡大に使用する基点
-	CVertex basePoint;
 
 	CMath CM;
 
@@ -83,7 +83,7 @@ public:
 	//近い点かどうか判別
 	CVertex* CheckSimilarVertex(double x, double y);
 
-	// //内外判定
+	//内外判定
 	bool VCheckNaiGai(double x, double y);
 	
 };

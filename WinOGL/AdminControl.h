@@ -45,6 +45,13 @@ private:
 	double Cursor_Pos_X;
 	double Cursor_Pos_Y;
 
+
+private:
+	CShape Shape;
+	CShape* ShapeHead;
+	CMath CM;
+	int Scount;
+
 	//選択される頂点
 	CVertex* selectedV;
 
@@ -54,14 +61,9 @@ private:
 	//選択される稜線(2つvertexの初めの方)
 	CVertex* selectedL;
 
-	//拡大に使用する基点
+	//基点
 	CVertex* basePoint;
 
-private:
-	CShape Shape;
-	CShape* ShapeHead;
-	CMath CM;
-	int Scount;
 public:
 	bool checkNaigai(CShape* TaisyouS, double x, double y);
 	// 座標軸の描画
@@ -74,9 +76,12 @@ public:
 	void CheckShapeSelect();
 	//稜線の選択
 	void LineSelect();
-	//基点の追加
-	void addBasePoint(double x, double y);
-
+	//選択のリセット
+	void resetSelect();
+	//基点の設定
+	void SetBasePoint(double x, double y, int width, int height);
+	//基点の返却
+	bool GetBasePoint();
 };
 
 

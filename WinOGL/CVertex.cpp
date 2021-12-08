@@ -3,8 +3,8 @@
 
 CVertex::CVertex()
 {
-	x = 0;
-	y = 0;
+	x = NULL;
+	y = NULL;
 	next_vertex = NULL;
 }
 

@@ -7,6 +7,7 @@ CShape::CShape()
 	Vertex_head = NULL;
 	next_shape = NULL;
 	Start = NULL;
+	End = NULL;
 	closed = false;
 	count = 0;
 	SSelected = false;
@@ -287,7 +288,6 @@ bool CShape::VCheckNaiGai(double x, double y)
 		return false;
 	return true;
 }
-
 
 
 
