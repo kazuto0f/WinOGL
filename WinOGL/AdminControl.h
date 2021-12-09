@@ -22,6 +22,9 @@ public:
 	//拡大関数
 	void mouseWheel(short wheel);
 
+	//回転関数
+	void rotateShape(double x, double y);
+
 	//マウスリリースの関数
 	void OnUp(double x, double y, int width, int height);
 
@@ -44,6 +47,9 @@ private:
 
 	double Cursor_Pos_X;
 	double Cursor_Pos_Y;
+
+	double Pre_Cursor_Pos_X;
+	double Pre_Cursor_Pos_Y;
 
 
 private:

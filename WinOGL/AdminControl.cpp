@@ -302,8 +302,6 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 			}
 		}
 		else if (selectedV != NULL) {
-
-			//クリック座標と最も近い頂点を返却
 			CVertex* preV = NULL;
 
 			//taisyouSに変更しようとしている頂点を含むshapeを入れる
@@ -349,17 +347,8 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 					//内外判定
 					for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
 						for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+							//内外判定がtrueの時
 							if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-								//内外判定がtrueの時
-
-								//頂点の数を戻す
-								taisyouS->SetCount(taisyouS->GetCount() + 1);
-								//終点を戻す
-								PreEnd->SetNext(tempEnd);
-								//ヘッドを戻す
-								taisyouS->SetShead(tempHead);
-								//追加した頂点の削除
-								delete New;
 								//内外判定に入ったフラグ
 								ret = true;
 							}
@@ -374,6 +363,13 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 
 				//削除系の処理
 					if (ret == true) {
+						//頂点の数を戻す
+						taisyouS->SetCount(taisyouS->GetCount() + 1);
+						//終点を戻す
+						PreEnd->SetNext(tempEnd);
+						//ヘッドを戻す
+						taisyouS->SetShead(tempHead);
+						//追加した点を削除
 						delete New;
 					}
 					else {
@@ -447,6 +443,10 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 		selectedV = NULL;
 		selectedL = NULL;
 		selectedS = NULL;
+		/*if (basePoint != NULL) {
+			delete basePoint;
+			basePoint = NULL;
+		}*/
 		
 		//shapeが何もないとき
 		if (ShapeHead == NULL) {
@@ -509,7 +509,7 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 	}
 }
 
-// マウスを動かすと呼ばれる
+// マウスを動かすと呼ばれる(左クリックが押された状態)
 void CAdminControl::mouseMove(double x, double y, int width, int height)
 {
 	//内外または交差判定を入れる
@@ -529,57 +529,79 @@ void CAdminControl::mouseMove(double x, double y, int width, int height)
 			Cursor_Pos_Y = Cursor_Pos_Y * ((double)height / (double)width);
 		}
 
-		//図形の中心座標を計算
-		double tx = selectedS->GetSHead()->GetX();
-		double ty = selectedS->GetSHead()->GetY();
-		for (CVertex* nowV = selectedS->GetSHead()->GetNext(); nowV != NULL; nowV = nowV->GetNext()) {
-			tx += nowV->GetX();
-			ty += nowV->GetY();
+		//基点がある場合
+		if (basePoint != NULL) {
+			rotateShape(Cursor_Pos_X, Pre_Cursor_Pos_Y);
 		}
-		tx = tx / selectedS->GetCount();
-		ty = ty / selectedS->GetCount();
-
-
-
-		//座標に中心座標とマウス座標の差を足す
-		for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-			nowV->SetX(nowV->GetX() + (Cursor_Pos_X - tx));
-			nowV->SetY(nowV->GetY() + (Cursor_Pos_Y - ty));
-		}
-
-		//内外判定
-		for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-			for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-				if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-					ret = true;
-					break;
-				}
+		//基点がない場合
+		else {
+			//図形の中心座標を計算
+			double tx = selectedS->GetSHead()->GetX();
+			double ty = selectedS->GetSHead()->GetY();
+			for (CVertex* nowV = selectedS->GetSHead()->GetNext(); nowV != NULL; nowV = nowV->GetNext()) {
+				tx += nowV->GetX();
+				ty += nowV->GetY();
 			}
-			if (ret)	break;
-		}
+			tx = tx / selectedS->GetCount();
+			ty = ty / selectedS->GetCount();
 
-		//交差判定
-		for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-			for (CVertex* nowV = nowS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
-				for (CShape* checkS = ShapeHead; checkS != NULL; checkS = checkS->SGetNext()) {
-					if (checkS->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
-						ret = true;
-						break;
+
+
+			//座標に中心座標とマウス座標の差を足す
+			for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+				nowV->SetX(nowV->GetX() + (Cursor_Pos_X - tx));
+				nowV->SetY(nowV->GetY() + (Cursor_Pos_Y - ty));
+			}
+
+			/*for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+				nowV->SetX(nowV->GetX() + (Cursor_Pos_X - Pre_Cursor_Pos_X));
+				nowV->SetY(nowV->GetY() + (Cursor_Pos_Y - Pre_Cursor_Pos_Y));
+			}*/
+
+			//内外判定
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				//if (!nowS->GetClosed()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+							ret = true;
+							break;
+						}
 					}
+				//}
+				if (ret)	break;
+			}
+
+			//交差判定
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				for (CVertex* nowV = nowS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+					for (CShape* checkS = ShapeHead; checkS != NULL; checkS = checkS->SGetNext()) {
+						if (checkS->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
+							ret = true;
+							break;
+						}
+					}
+					if (ret)	break;
 				}
 				if (ret)	break;
 			}
-			if (ret)	break;
-		}
 
-		if (ret) {
-			for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-				nowV->SetX(nowV->GetX() - (Cursor_Pos_X - tx));
-				nowV->SetY(nowV->GetY() - (Cursor_Pos_Y - ty));
+			if (ret) {
+				for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					nowV->SetX(nowV->GetX() - (Cursor_Pos_X - tx));
+					nowV->SetY(nowV->GetY() - (Cursor_Pos_Y - ty));
+				}
 			}
-		}
-	}
 
+			/*if (ret) {
+				for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					nowV->SetX(nowV->GetX() - (Cursor_Pos_X - Pre_Cursor_Pos_X));
+					nowV->SetY(nowV->GetY() - (Cursor_Pos_Y - Pre_Cursor_Pos_Y));
+				}
+			}*/
+		}
+		Pre_Cursor_Pos_X = Cursor_Pos_X;
+		Pre_Cursor_Pos_Y = Cursor_Pos_Y;
+	}
 }
 
 //拡大関数
@@ -591,40 +613,117 @@ void CAdminControl::mouseWheel(short wheel)
 		if (basePoint != NULL) {
 			for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 				if (wheel > 0) {
-					CVect V = CM.CalcVect(basePoint, nowV);
+					CVect V = CM.CalcVect(basePoint,nowV);
 					nowV->SetX(1.03 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
 					nowV->SetY(1.03 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
 				}
 				else {
 					CVect V = CM.CalcVect(basePoint, nowV);
-					nowV->SetX(0.97 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
-					nowV->SetY(0.97 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
+					nowV->SetX(0.97087379 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
+					nowV->SetY(0.97087379 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
 				}
 			}
 
 			// 内外判定
 			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-				for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-					if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-						ret = true;
-						break;
+				//if (!nowS->GetClosed()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+							ret = true;
+							break;
+						}
 					}
+				//}
+				if (ret)	break;
+			}
+
+			//交差判定
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				for (CVertex* nowV = nowS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+					for (CShape* checkS = ShapeHead; checkS != NULL; checkS = checkS->SGetNext()) {
+						if (checkS->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
+							ret = true;
+							break;
+						}
+					}
+					if (ret)	break;
 				}
 				if (ret)	break;
 			}
 
+			//ret が trueのとき元に戻す
 			if (ret) {
 				for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 					if (wheel > 0) {
 						CVect V = CM.CalcVect(basePoint, nowV);
-						nowV->SetX(0.97 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
-						nowV->SetY(0.97 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
+						nowV->SetX(0.97087379 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
+						nowV->SetY(0.97087379 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
 					}
 					else {
 						CVect V = CM.CalcVect(basePoint, nowV);
 						nowV->SetX(1.03 * ((nowV->GetX()) - (basePoint->GetX())) + (basePoint->GetX()));
 						nowV->SetY(1.03 * ((nowV->GetY()) - (basePoint->GetY())) + (basePoint->GetY()));
 					}
+				}
+			}
+		}
+	}
+}
+
+//回転関数
+void CAdminControl::rotateShape(double x, double y)
+{
+	bool ret = false;
+
+	if (selectedS != NULL) {
+		if (basePoint != NULL) {
+
+			CVect bm = CM.CalcVect(basePoint->GetX(), basePoint->GetY(), x, y);
+			CVect bv = CM.CalcVect(basePoint, selectedS->GetSHead());
+			double rad = CM.calcAngle(bv, bm);
+
+			for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+
+				double x2 = ((nowV->GetX() - basePoint->GetX()) * cos(rad)) - ((nowV->GetY() - basePoint->GetY()) * sin(rad)) + basePoint->GetX();
+				double y2 = ((nowV->GetX() - basePoint->GetX()) * sin(rad)) + ((nowV->GetY() - basePoint->GetY()) * cos(rad)) + basePoint->GetY();
+
+				nowV->SetXY(x2, y2);
+			}
+
+			// 内外判定
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+							ret = true;
+							break;
+						}
+					}
+				
+				if (ret)	break;
+			}
+
+			//交差判定
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				for (CVertex* nowV = nowS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+					for (CShape* checkS = ShapeHead; checkS != NULL; checkS = checkS->SGetNext()) {
+						if (checkS->CheckCrossVertex(nowV->GetX(), nowV->GetY(), nowV->GetNext()->GetX(), nowV->GetNext()->GetY())) {
+							ret = true;
+							break;
+						}
+					}
+					if (ret)	break;
+				}
+				if (ret)	break;
+			}
+
+			//判定に引っかかったら元に戻す
+			if (ret) {
+				for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+
+					double x2 = ((nowV->GetX() - basePoint->GetX()) * cos(-rad)) - ((nowV->GetY() - basePoint->GetY()) * sin(-rad)) + basePoint->GetX();
+					double y2 = ((nowV->GetX() - basePoint->GetX()) * sin(-rad)) + ((nowV->GetY() - basePoint->GetY()) * cos(-rad)) + basePoint->GetY();
+
+					nowV->SetXY(x2, y2);
 				}
 			}
 		}
@@ -849,13 +948,24 @@ void CAdminControl::SetBasePoint(double x, double y, int width, int height)
 		y = y * ((double)height / (double)width);
 	}
 
+	//basepointに何か入っているとき
 	if (basePoint != NULL) {
-		delete basePoint;
-		basePoint = NULL;
+		//クリック座標がbasepointと近いとき
+		if (CM.euclid2p(basePoint->GetX(), basePoint->GetY(), x, y) < 0.05) {
+			delete basePoint;
+			basePoint = NULL;
+		}
+		//遠いときは移動させる
+		else {
+			basePoint->SetXY(x, y);
+		}
 	}
-	CVertex* New = new CVertex();
-	New->SetXY(x, y);
-	basePoint = New;
+	//NULのときは新しく生成
+	else {
+		CVertex* New = new CVertex();
+		New->SetXY(x, y);
+		basePoint = New;
+	}
 }
 
 //基点の返却

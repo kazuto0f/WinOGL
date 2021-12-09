@@ -48,6 +48,11 @@ double CMath::calcAngle(CVertex* As, CVertex* Ae, CVertex* Bs, CVertex* Be)
 	return atan2(calcGaiseki(A, B), calcNaiseki(A, B));
 }
 
+double CMath::calcAngle(CVect a, CVect b)
+{
+	return atan2(calcGaiseki(a, b), calcNaiseki(a, b));
+}
+
 //“_‚Æ’¼ü‚Ì‹——£ŒvZ(â‘Î’l)
 double CMath::calcDistancePL(CVect a, CVect b)
 {

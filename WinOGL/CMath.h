@@ -20,6 +20,7 @@ public:
 	
 	//角度の計算
 	double calcAngle(CVertex* As, CVertex* Ae, CVertex* Bs, CVertex* Be);
+	double calcAngle(CVect a, CVect b);
 
 	//点と直線の距離計算
 	double calcDistancePL(CVect a, CVect b);

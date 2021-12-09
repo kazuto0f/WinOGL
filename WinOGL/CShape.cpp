@@ -133,6 +133,7 @@ void CShape::DrawShape(float R, float G, float B)
 		glVertex2f(nowV->GetX(), nowV->GetY());
 		glVertex2f(preV->GetX(), preV->GetY());
 		glEnd();
+
 		preV = nowV;
 		nowV = nowV->GetNext();
 	}
