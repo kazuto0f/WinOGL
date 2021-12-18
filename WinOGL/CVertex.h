@@ -3,7 +3,7 @@ class CVertex
 {
 public:
 	CVertex();
-	CVertex(double new_x, double new_y, CVertex* new_next);
+	CVertex(double new_x, double new_y, CVertex* new_next, CVertex* new_front);
 	~CVertex();
 private:
 	//　頂点のX座標
@@ -12,6 +12,8 @@ private:
 	double y;
 	//　次の頂点リストを指すポインタ
 	CVertex* next_vertex;
+	//一つ前を示すポインタ
+	CVertex* front_vertex;
 public:
 	//　頂点のX座標を書き込む
 	void SetX(double new_x);
@@ -27,6 +29,8 @@ public:
 	void GetXY(double* get_x, double* get_y);
 	//　次の頂点リストを指すポインタを書き込む
 	void SetNext(CVertex* new_next);
+	//前の頂点のリストを示すポインタを書き込む
+	void SetFront(CVertex* new_front);
 	//　次の頂点リストを指すポインタを読み込む
 	CVertex* GetNext();
 };

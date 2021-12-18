@@ -6,12 +6,14 @@ CVertex::CVertex()
 	x = NULL;
 	y = NULL;
 	next_vertex = NULL;
+	front_vertex = NULL;
 }
 
-CVertex::CVertex(double new_x,double new_y, CVertex* new_next)
+CVertex::CVertex(double new_x,double new_y, CVertex* new_next, CVertex* new_front)
 {
 	SetXY(new_x, new_y);
 	SetNext(new_next);
+	SetFront(new_front);
 }
 
 CVertex::~CVertex()
@@ -61,6 +63,11 @@ void CVertex::GetXY(double* get_x, double* get_y)
 void CVertex::SetNext(CVertex* new_next)
 {
 	next_vertex = new_next;
+}
+
+//前の頂点のリストを示すポインタを書き込む
+void CVertex::SetFront(CVertex* new_front)
+{
 }
 
 //　次の頂点リストを指すポインタを読み込む

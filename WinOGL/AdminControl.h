@@ -72,6 +72,8 @@ private:
 
 public:
 	bool checkNaigai(CShape* TaisyouS, double x, double y);
+
+	bool checkNaigai2(CShape* TaisyouS, double x, double y);
 	// 座標軸の描画
 	void DrawAxis();
 	//メニューやボタンの状態を管理する変数

@@ -6,6 +6,7 @@ CShape::CShape()
 {
 	Vertex_head = NULL;
 	next_shape = NULL;
+	front_shape = NULL;
 	Start = NULL;
 	End = NULL;
 	closed = false;
@@ -33,7 +34,7 @@ void CShape::SetCount(int t)
 void CShape::SetClosed()
 {
 	if (!CheckCrossVertex(Vertex_head->GetNext()->GetX(), Vertex_head->GetNext()->GetY(), Start->GetX(), Start->GetY())) {
-		SetStart();
+		SetStartPos();
 		closed = true;
 	}
 	else {
@@ -78,6 +79,7 @@ void CShape::SSetXY(double new_x, double new_y)
 	}
 	else
 	{
+		Vertex_head->SetFront(New);
 		New->SetNext(Vertex_head);
 		Vertex_head = New;
 	}
@@ -94,6 +96,17 @@ void CShape::SSetNext(CShape* Shape_next)
 CShape* CShape::SGetNext()
 {
 	return next_shape;
+}
+
+void CShape::SSetFront(CShape* front)
+{
+	//前の図形を示すポインタを書き込む
+}
+
+//前の図形のポインタを返却
+CShape* CShape::SGetFront()
+{
+	return front_shape;
 }
 
 //閉じているかを返却
@@ -140,9 +153,14 @@ void CShape::DrawShape(float R, float G, float B)
 }
 
 //点をスタート位置に設定
-void CShape::SetStart()
+void CShape::SetStartPos()
 {
 	Vertex_head->SetXY(Start->GetX(), Start->GetY());
+}
+//点をスタート位置に設定
+void CShape::SetStart(CVertex* v)
+{
+	Start = v;
 }
 
 //スタート位置を変更
@@ -203,7 +221,7 @@ bool CShape::CheckCrossVertex(double sv_x, double sv_y, double ev_x, double ev_y
 	CVect b1;
 	CVect b2;
 
-	if (count > 2) {										//shapeの頂点数が2つ以上(nowVとpreVのため)
+	if (count >= 2) {										//shapeの頂点数が2つ以上(nowVとpreVのため)
 		CVertex* nowV = Vertex_head;
 		CVertex* preV = nowV->GetNext();
 		for (; preV != NULL; preV = preV->GetNext()) {		//preがNULLになるまで繰り返す

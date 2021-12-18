@@ -113,6 +113,9 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 		//選択された頂点の一つ前の頂点
 		CVertex* preSV = NULL;
 
+		//判定を入れる
+		bool ret = false;
+
 		//EditFlagがtrueの時選択処理
 		if (EditFlag) {
 			if (ShapeHead == NULL) {
@@ -148,28 +151,68 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 							break;
 					}
 
-					//内外判定がfalseの時
-					if (checkNaigai(taisyouS, World_X, World_Y)) {
-						//選択された頂点の座標をもとに戻す
-						selectedV->SetXY(temp_x, temp_y);
-						if (selectedHead != NULL)
-							selectedHead->SetXY(temp_x, temp_y);
+					//内外判定
+					//shapeが閉じられていないときはshapeheadの次から判定
+					if (!ShapeHead->GetClosed()) {
+						//すべての頂点で内外判定
+						for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+							for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+								if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
+									//交差判定に引っかかったらretをtrue
+									ret = true;
+									break;
+								}
+							}
+							if (ret)break;
+						}
+
+						//交差判定
+						for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+
+							//選択された頂点の次の頂点がNULLでないときの交差判定
+							if (selectedV->GetNext() != NULL) {
+								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), selectedV->GetNext()->GetX(), selectedV->GetNext()->GetY())) {
+									//交差判定に引っかかったらretをtrue
+									ret = true;
+									break;
+								}
+								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
+									//交差判定に引っかかったらretをtrue
+									ret = true;
+									break;
+								}
+							}
+							//選択された頂点の次の頂点がNULLのときの交差判定
+							else {
+								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
+									//交差判定に引っかかったらretをtrue
+									ret = true;
+									break;
+								}
+								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), taisyouS->GetSHead()->GetNext()->GetX(), taisyouS->GetSHead()->GetNext()->GetY())) {
+									//交差判定に引っかかったらretをtrue
+									ret = true;
+									break;
+								}
+							}
+						}
 					}
+					//shapeが閉じられているとき
+					/*else if (checkNaigai(taisyouS, World_X, World_Y)) {
+						ret = true;
+					}*/
 					else
 					{
 						//すべての頂点で内外判定
 						for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 							for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 								if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-									//内外判定に引っかかったら頂点を元に戻す
-									selectedV->SetXY(temp_x, temp_y);
-									if (selectedHead != NULL)
-										selectedHead->SetXY(temp_x, temp_y);
-									//選択頂点の初期化
-									selectedV == NULL;
+									//交差判定に引っかかったらretをtrue
+									ret = true;
 									break;
 								}
 							}
+							if (ret)break;
 						}
 
 						//交差判定
@@ -178,47 +221,40 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 							//選択された頂点の次の頂点がNULL出ないときの交差判定
 							if (selectedV->GetNext() != NULL) {
 								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), selectedV->GetNext()->GetX(), selectedV->GetNext()->GetY())) {
-									//交差判定に引っかかったら頂点を元に戻す
-									selectedV->SetXY(temp_x, temp_y);
-									if (selectedHead != NULL)
-										selectedHead->SetXY(temp_x, temp_y);
-									//選択頂点の初期化
-									selectedV == NULL;
+									//交差判定に引っかかったらretをtrue
+									ret = true;
 									break;
 								}
 								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
-									//交差判定に引っかかったら頂点を元に戻す
-									selectedV->SetXY(temp_x, temp_y);
-									if (selectedHead != NULL)
-										selectedHead->SetXY(temp_x, temp_y);
-									//選択頂点の初期化
-									selectedV == NULL;
+									//交差判定に引っかかったらretをtrue
+									ret = true;
 									break;
 								}
 							}
 							//選択された頂点の次の頂点がNULLのときの交差判定
 							else {
 								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
-									//交差判定に引っかかったら頂点を元に戻す
-									selectedV->SetXY(temp_x, temp_y);
-									if (selectedHead != NULL)
-										selectedHead->SetXY(temp_x, temp_y);
-									//選択頂点の初期化
-									selectedV == NULL;
+									//交差判定に引っかかったらretをtrue
+									ret = true;
 									break;
 								}
 								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), taisyouS->GetSHead()->GetNext()->GetX(), taisyouS->GetSHead()->GetNext()->GetY())) {
-									//交差判定に引っかかったら頂点を元に戻す
-									selectedV->SetXY(temp_x, temp_y);
-									if (selectedHead != NULL)
-										selectedHead->SetXY(temp_x, temp_y);
-									
-									//選択頂点の初期化
-									selectedV == NULL;
+									//交差判定に引っかかったらretをtrue
+									ret = true;
 									break;
 								}
 							}
 						}
+					}
+
+					if (ret) {
+						//選択された頂点の座標をもとに戻す
+						selectedV->SetXY(temp_x, temp_y);
+						if (selectedHead != NULL)
+							selectedHead->SetXY(temp_x, temp_y);
+
+						//選択頂点の初期化
+						selectedV == NULL;
 					}
 				}
 			}
@@ -325,94 +361,167 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 				}
 			}
 
-			if (taisyouS->GetCount() > 4) {
-				//消そうとしている座標がヘッドの時
-				if (taisyouS->GetSHead()->GetX() == selectedV->GetX() && taisyouS->GetSHead()->GetY() == selectedV->GetY()) {
+			bool delhead = false;
 
-					//頂点ヘッド,終点の一時保存
-					CVertex* tempHead = taisyouS->GetSHead();
-					CVertex* tempEnd = PreEnd->GetNext();
+			//形状が閉じられていないとき
+			//if (!ShapeHead->GetClosed()) {
+			//	if (taisyouS->GetCount() > 2) {
 
-					//形状のヘッドを一つずらす
-					taisyouS->SetShead(taisyouS->GetSHead()->GetNext());
+			//		//頂点ヘッド,終点の一時保存
+			//		CVertex* tempHead = taisyouS->GetSHead();
+			//		CVertex* tempEnd = taisyouS->GetStartVertex();
 
-					//（頂点挿入）新しいヘッドに新しい終点を生成しつなげる
-					CVertex* New = new CVertex();
-					New->SetXY(taisyouS->GetSHead()->GetX(), taisyouS->GetSHead()->GetY());
-					PreEnd->SetNext(New);
-					
-					//形状の頂点数の再設定
-					taisyouS->SetCount(taisyouS->GetCount() - 1);
+			//		//消そうとしている座標がヘッドの時
+			//		if (taisyouS->GetSHead()->GetX() == selectedV->GetX() && taisyouS->GetSHead()->GetY() == selectedV->GetY()) {
+			//			taisyouS->SetShead(taisyouS->GetSHead()->GetNext());
 
-					//内外判定
-					for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
-						for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-							//内外判定がtrueの時
-							if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-								//内外判定に入ったフラグ
-								ret = true;
+			//			taisyouS->SetCount(taisyouS->GetCount() - 1);
+
+			//			delete selectedV;
+			//			selectedV = NULL;
+			//		}
+			//		//消そうとしている座標が終点の時
+			//		else if (taisyouS->GetStartVertex()->GetX() == selectedV->GetX() && taisyouS->GetStartVertex()->GetY() == selectedV->GetY()) {
+			//			taisyouS->SetStart(taisyouS->GetStartVertex()->GetNext());
+
+			//			taisyouS->SetCount(taisyouS->GetCount() - 1);
+
+			//			delete selectedV;
+			//			selectedV = NULL;
+			//		}
+			//	}
+			//}
+			//else 
+			{
+
+				if (taisyouS->GetCount() > 4) {
+					//消そうとしている座標がヘッドの時
+					if (taisyouS->GetSHead()->GetX() == selectedV->GetX() && taisyouS->GetSHead()->GetY() == selectedV->GetY()) {
+
+						delhead = true;
+
+						//頂点ヘッド,終点の一時保存
+						CVertex* tempHead = taisyouS->GetSHead();
+						CVertex* tempEnd = PreEnd->GetNext();
+
+						//形状のヘッドを一つずらす
+						taisyouS->SetShead(taisyouS->GetSHead()->GetNext());
+
+						//（頂点挿入）新しいヘッドに新しい終点を生成しつなげる
+						CVertex* New = new CVertex();
+						New->SetXY(taisyouS->GetSHead()->GetX(), taisyouS->GetSHead()->GetY());
+						PreEnd->SetNext(New);
+
+						//形状の頂点数の再設定
+						taisyouS->SetCount(taisyouS->GetCount() - 1);
+
+						if (!ShapeHead->GetClosed()) {
+							//内外判定
+							for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+								for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+									//内外判定がtrueの時
+									if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
+										//内外判定に入ったフラグ
+										ret = true;
+									}
+								}
 							}
-						}
-					}
 
-					//内外判定がfalseのとき自己交差判定
-					if (!ret) {
-						if (taisyouS->CheckCrossVertex(PreEnd->GetX(), PreEnd->GetY(), preV->GetX(), preV->GetY()) == true)
-							ret = true;
-					}
+							//内外判定がfalseのとき自己交差判定
+							if (!ret) {
+								if (taisyouS->CheckCrossVertex(PreEnd->GetX(), PreEnd->GetY(), preV->GetX(), preV->GetY()) == true)
+									ret = true;
+							}
 
-				//削除系の処理
-					if (ret == true) {
-						//頂点の数を戻す
-						taisyouS->SetCount(taisyouS->GetCount() + 1);
-						//終点を戻す
-						PreEnd->SetNext(tempEnd);
-						//ヘッドを戻す
-						taisyouS->SetShead(tempHead);
-						//追加した点を削除
-						delete New;
-					}
-					else {
-						delete tempHead;
-						delete preV;
-					}
-				}
-				else {
-
-					//頂点の挿入
-					preV->SetNext(selectedV->GetNext());
-					//頂点数の再設定
-					taisyouS->SetCount(taisyouS->GetCount() - 1);
-
-					//内外判定
-					for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
-						for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-							if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-								//内外判定がtrueの時
-
+							//削除系の処理
+							if (ret == true) {
 								//頂点の数を戻す
 								taisyouS->SetCount(taisyouS->GetCount() + 1);
-								//選択した頂点をリストに戻す
-								preV->SetNext(selectedV);
-								//内外判定に入ったフラグ
-								ret = true;
+								//終点を戻す
+								PreEnd->SetNext(tempEnd);
+								//ヘッドを戻す
+								taisyouS->SetShead(tempHead);
+								//追加した点を削除
+								delete New;
+							}
+							else {
+								delete tempHead;
+								delete tempEnd;
+							}
+						}
+						else {
+
+							//内外判定
+							for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+								for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+									//内外判定がtrueの時
+									if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+										//内外判定に入ったフラグ
+										ret = true;
+									}
+								}
+							}
+
+							//内外判定がfalseのとき自己交差判定
+							if (!ret) {
+								if (taisyouS->CheckCrossVertex(PreEnd->GetX(), PreEnd->GetY(), preV->GetX(), preV->GetY()) == true)
+									ret = true;
+							}
+
+							//削除系の処理
+							if (ret == true) {
+								//頂点の数を戻す
+								taisyouS->SetCount(taisyouS->GetCount() + 1);
+								//終点を戻す
+								PreEnd->SetNext(tempEnd);
+								//ヘッドを戻す
+								taisyouS->SetShead(tempHead);
+								//追加した点を削除
+								delete New;
+							}
+							else {
+								delete tempHead;
+								delete tempEnd;
 							}
 						}
 					}
-
-					//内外判定がfalseのとき自己交差判定
-					if (!ret) {
-						if (taisyouS->CheckCrossVertex(preV->GetX(), preV->GetY(), preV->GetNext()->GetX(), preV->GetNext()->GetY()) == true)
-							ret = true;
-					}
-
-					//削除系の処理
-					if (!ret) {
-						delete selectedV;
-					}
 					else {
-						preV->SetNext(selectedV);
-						taisyouS->SetCount(taisyouS->GetCount() + 1);
+
+						//頂点の挿入
+						preV->SetNext(selectedV->GetNext());
+						//頂点数の再設定
+						taisyouS->SetCount(taisyouS->GetCount() - 1);
+
+						//内外判定
+						for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
+							for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+								if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
+									//内外判定がtrueの時
+
+									//頂点の数を戻す
+									taisyouS->SetCount(taisyouS->GetCount() + 1);
+									//選択した頂点をリストに戻す
+									preV->SetNext(selectedV);
+									//内外判定に入ったフラグ
+									ret = true;
+								}
+							}
+						}
+
+						//内外判定がfalseのとき自己交差判定
+						if (!ret) {
+							if (taisyouS->CheckCrossVertex(preV->GetX(), preV->GetY(), preV->GetNext()->GetX(), preV->GetNext()->GetY()) == true)
+								ret = true;
+						}
+
+						//削除系の処理
+						if (!ret) {
+							delete selectedV;
+						}
+						else {
+							preV->SetNext(selectedV);
+							taisyouS->SetCount(taisyouS->GetCount() + 1);
+						}
 					}
 				}
 			}
@@ -483,6 +592,7 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 				if (!checkNaigai(NULL, World_X, World_Y)) {
 					CShape* New = new CShape();					//閉じているときに新しいShapeを生成しクリック座標を登録
 					Scount++;
+					ShapeHead->SSetFront(New);
 					New->SSetXY(World_X, World_Y);
 					New->SSetNext(ShapeHead);
 					ShapeHead = New;
@@ -553,22 +663,29 @@ void CAdminControl::mouseMove(double x, double y, int width, int height)
 				nowV->SetY(nowV->GetY() + (Cursor_Pos_Y - ty));
 			}
 
-			/*for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-				nowV->SetX(nowV->GetX() + (Cursor_Pos_X - Pre_Cursor_Pos_X));
-				nowV->SetY(nowV->GetY() + (Cursor_Pos_Y - Pre_Cursor_Pos_Y));
-			}*/
-
-			//内外判定
-			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-				//if (!nowS->GetClosed()) {
+			if (!ShapeHead->GetClosed()) {
+				//内外判定
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
+							ret = true;
+							break;
+						}
+					}
+					if (ret)	break;
+				}
+			}
+			else {
+				//内外判定
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 						if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
 							ret = true;
 							break;
 						}
 					}
-				//}
-				if (ret)	break;
+					if (ret)	break;
+				}
 			}
 
 			//交差判定
@@ -592,12 +709,6 @@ void CAdminControl::mouseMove(double x, double y, int width, int height)
 				}
 			}
 
-			/*if (ret) {
-				for (CVertex* nowV = selectedS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-					nowV->SetX(nowV->GetX() - (Cursor_Pos_X - Pre_Cursor_Pos_X));
-					nowV->SetY(nowV->GetY() - (Cursor_Pos_Y - Pre_Cursor_Pos_Y));
-				}
-			}*/
 		}
 		Pre_Cursor_Pos_X = Cursor_Pos_X;
 		Pre_Cursor_Pos_Y = Cursor_Pos_Y;
@@ -624,17 +735,29 @@ void CAdminControl::mouseWheel(short wheel)
 				}
 			}
 
-			// 内外判定
-			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-				//if (!nowS->GetClosed()) {
+			if (!ShapeHead->GetClosed()) {
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
+							ret = true;
+							break;
+						}
+					}
+					if (ret)	break;
+				}
+			}
+			else {
+
+				// 内外判定
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 						if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
 							ret = true;
 							break;
 						}
 					}
-				//}
-				if (ret)	break;
+					if (ret)	break;
+				}
 			}
 
 			//交差判定
@@ -689,17 +812,31 @@ void CAdminControl::rotateShape(double x, double y)
 
 				nowV->SetXY(x2, y2);
 			}
+			if (!ShapeHead->GetClosed()) {
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+						if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
+							ret = true;
+							break;
+						}
+					}
 
-			// 内外判定
-			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					if (ret)	break;
+				}
+			}
+			else {
+
+				// 内外判定
+				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 						if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
 							ret = true;
 							break;
 						}
 					}
-				
-				if (ret)	break;
+
+					if (ret)	break;
+				}
 			}
 
 			//交差判定
@@ -752,7 +889,7 @@ void CAdminControl::CheckClosed()
 			if (!CheckCrossShape(ShapeHead, World_X,World_Y)) {					//スタート地点を置いたときに交差判定
 				if (ShapeHead->GetCount() > 3) {		//shapeに置かれた頂点の数が３つ以上の時
 					if (Scount > 1) {					//shapeのヘッド頂点の次がNULLの時を除く
-						ShapeHead->SetStart();			//一時的にvertex_headをスタート地点にする
+						ShapeHead->SetStartPos();			//一時的にvertex_headをスタート地点にする
 						for (CShape* nowS = ShapeHead->SGetNext(); nowS != NULL; nowS = nowS->SGetNext()) {
 							if (checkNaigai(nowS, nowS->GetSHead()->GetX(), nowS->GetSHead()->GetY())) {
 								CVertex* temp = NULL;
@@ -794,6 +931,24 @@ bool CAdminControl::checkNaigai(CShape* TaisyouS, double x, double y)
 	now = ShapeHead;
 	for (; now != NULL; now = now->SGetNext()) {	//shapeがNULLになるまで繰り返す
 		if (TaisyouS == now)						//対象の頂点が含まれるshapeを省く
+			continue;
+		if (now->VCheckNaiGai(x, y)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//形状が閉じられていないときの内外判定
+bool CAdminControl::checkNaigai2(CShape* TaisyouS, double x, double y)
+{
+	CShape* now;	//今居るshape
+	now = ShapeHead;
+	for (; now != NULL; now = now->SGetNext()) {	//shapeがNULLになるまで繰り返す
+		if (TaisyouS == now)						//対象の頂点が含まれるshapeを省く
+			continue;
+		if (ShapeHead == now)
 			continue;
 		if (now->VCheckNaiGai(x, y)) {
 			return true;

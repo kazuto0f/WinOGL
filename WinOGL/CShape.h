@@ -17,6 +17,8 @@ private:
 	bool closed;
 	//次の図形を示すポインタ
 	CShape* next_shape;
+	//前の図形を示すポインタ
+	CShape* front_shape;
 	//頂点の先頭
 	CVertex* Vertex_head;
 	//頂点の数
@@ -55,6 +57,12 @@ public:
 	//次の頂点リストを指すポインタを返却
 	CShape* SGetNext();
 
+	//前の図形を示すポインタを書き込む
+	void SSetFront(CShape* front);
+
+	//前の図形のポインタを返却
+	CShape* SGetFront();
+
 	//閉じているかを返却
 	bool GetClosed();
 
@@ -65,7 +73,8 @@ public:
 	void DrawShape(float R,float G,float B);
 
 	//点をスタート位置に設定
-	void SetStart();
+	void SetStartPos();
+	void SetStart(CVertex* v);
 
 	//スタート位置を変更
 	void ChangeStart(CVertex* n);
