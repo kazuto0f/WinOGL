@@ -151,6 +151,17 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 							break;
 					}
 
+					//taisyouSに変更しようとしている頂点を含むshapeを入れる
+					for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+						for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+							if (nowV->GetX() == selectedV->GetX(), nowV->GetY() == selectedV->GetY()) {
+								taisyouS = nowS;
+								break;
+							}
+						}
+						if (taisyouS != NULL)	break;
+					}
+
 					//内外判定
 					//shapeが閉じられていないときはshapeheadの次から判定
 					if (!ShapeHead->GetClosed()) {
@@ -165,42 +176,7 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 							}
 							if (ret)break;
 						}
-
-						//交差判定
-						for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-
-							//選択された頂点の次の頂点がNULLでないときの交差判定
-							if (selectedV->GetNext() != NULL) {
-								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), selectedV->GetNext()->GetX(), selectedV->GetNext()->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
-								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
-							}
-							//選択された頂点の次の頂点がNULLのときの交差判定
-							else {
-								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
-								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), taisyouS->GetSHead()->GetNext()->GetX(), taisyouS->GetSHead()->GetNext()->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
-							}
-						}
 					}
-					//shapeが閉じられているとき
-					/*else if (checkNaigai(taisyouS, World_X, World_Y)) {
-						ret = true;
-					}*/
 					else
 					{
 						//すべての頂点で内外判定
@@ -214,38 +190,41 @@ void CAdminControl::OnUp(double x, double y, int width, int height)
 							}
 							if (ret)break;
 						}
+					}
 
-						//交差判定
-						for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+					//交差判定
+					for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 
-							//選択された頂点の次の頂点がNULL出ないときの交差判定
-							if (selectedV->GetNext() != NULL) {
-								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), selectedV->GetNext()->GetX(), selectedV->GetNext()->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
-								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
+						//選択された頂点の次の頂点がNULL出ないときの交差判定
+						if (selectedV->GetNext() != NULL) {
+							if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), selectedV->GetNext()->GetX(), selectedV->GetNext()->GetY())) {
+								//交差判定に引っかかったらretをtrue
+								ret = true;
+								break;
 							}
-							//選択された頂点の次の頂点がNULLのときの交差判定
-							else {
+							if (taisyouS->GetClosed()) {
 								if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
-									//交差判定に引っかかったらretをtrue
-									ret = true;
-									break;
-								}
-								if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), taisyouS->GetSHead()->GetNext()->GetX(), taisyouS->GetSHead()->GetNext()->GetY())) {
 									//交差判定に引っかかったらretをtrue
 									ret = true;
 									break;
 								}
 							}
 						}
+						//選択された頂点の次の頂点がNULLのときの交差判定
+						else {
+							if (nowS->CheckCrossVertex(preSV->GetX(), preSV->GetY(), selectedV->GetX(), selectedV->GetY())) {
+								//交差判定に引っかかったらretをtrue
+								ret = true;
+								break;
+							}
+							if (nowS->CheckCrossVertex(selectedV->GetX(), selectedV->GetY(), taisyouS->GetSHead()->GetNext()->GetX(), taisyouS->GetSHead()->GetNext()->GetY())) {
+								//交差判定に引っかかったらretをtrue
+								ret = true;
+								break;
+							}
+						}
 					}
+
 
 					if (ret) {
 						//選択された頂点の座標をもとに戻す
@@ -341,56 +320,31 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 			CVertex* preV = NULL;
 			CVertex* PreEnd = NULL;
 
-			//形状が閉じられていないとき
-			if (!ShapeHead->GetClosed()) {
-				//taisyouSに変更しようとしている頂点を含むshapeを入れる
-				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-					preV = nowS->GetSHead();
-					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-						if (nowV->GetX() == selectedV->GetX(), nowV->GetY() == selectedV->GetY()) {
-							taisyouS = nowS;
-							break;
-						}
-						preV = nowV;
-					}
-					if (taisyouS != NULL)	break;
-				}
 
-				//形状の最終の一つ前をPreEndに入れる
-				//if (taisyouS != ShapeHead) {
-					for (CVertex* nowV = taisyouS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
-						if (nowV->GetNext()->GetNext() == NULL) {
-							PreEnd = nowV;
-						}
+			//taisyouSに変更しようとしている頂点を含むshapeを入れる
+			for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+				preV = nowS->GetSHead();
+				for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+					if (nowV->GetX() == selectedV->GetX(), nowV->GetY() == selectedV->GetY()) {
+						taisyouS = nowS;
+						break;
 					}
-				//}
+					preV = nowV;
+				}
+				if (taisyouS != NULL)	break;
 			}
-			else {
-				//taisyouSに変更しようとしている頂点を含むshapeを入れる
-				for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
-					preV = nowS->GetSHead();
-					for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-						if (nowV->GetX() == selectedV->GetX(), nowV->GetY() == selectedV->GetY()) {
-							taisyouS = nowS;
-							break;
-						}
-						preV = nowV;
-					}
-					if (taisyouS != NULL)	break;
-				}
 
-				//形状の最終の一つ前をPreEndに入れる
-				for (CVertex* nowV = taisyouS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
-					if (nowV->GetNext()->GetNext() == NULL) {
-						PreEnd = nowV;
-					}
+
+			//形状の最終の一つ前をPreEndに入れる
+			for (CVertex* nowV = taisyouS->GetSHead(); nowV->GetNext() != NULL; nowV = nowV->GetNext()) {
+				if (nowV->GetNext()->GetNext() == NULL) {
+					PreEnd = nowV;
 				}
 			}
 
 			bool delhead = false;
 
-
-			if (taisyouS->GetCount() > 4) {
+			if (taisyouS->GetCount() > 4 && taisyouS->GetClosed()) {
 				//消そうとしている座標がヘッドの時
 				if (taisyouS->GetSHead()->GetX() == selectedV->GetX() && taisyouS->GetSHead()->GetY() == selectedV->GetY()) {
 
@@ -410,42 +364,6 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 
 					//形状の頂点数の再設定
 					taisyouS->SetCount(taisyouS->GetCount() - 1);
-
-					//if (!ShapeHead->GetClosed()) {
-					//	//内外判定
-					//	for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
-					//		for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
-					//			//内外判定がtrueの時
-					//			if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
-					//				//内外判定に入ったフラグ
-					//				ret = true;
-					//			}
-					//		}
-					//	}
-
-					//	//内外判定がfalseのとき自己交差判定
-					//	if (!ret) {
-					//		if (taisyouS->CheckCrossVertex(PreEnd->GetX(), PreEnd->GetY(), preV->GetX(), preV->GetY()) == true)
-					//			ret = true;
-					//	}
-
-					//	//削除系の処理
-					//	if (ret == true) {
-					//		//頂点の数を戻す
-					//		taisyouS->SetCount(taisyouS->GetCount() + 1);
-					//		//終点を戻す
-					//		PreEnd->SetNext(tempEnd);
-					//		//ヘッドを戻す
-					//		taisyouS->SetShead(tempHead);
-					//		//追加した点を削除
-					//		delete New;
-					//	}
-					//	else {
-					//		delete tempHead;
-					//		delete tempEnd;
-					//	}
-					//}
-					//else {
 
 					//内外判定
 					if (!ShapeHead->GetClosed()) {
@@ -471,9 +389,7 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 						}
 					}
 
-
 					//自己交差判定
-
 					if (taisyouS->CheckCrossVertex(PreEnd->GetX(), PreEnd->GetY(), preV->GetX(), preV->GetY()) == true)
 						ret = true;
 
@@ -511,7 +427,7 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 				}
 				else {
 
-					//頂点の挿入
+					//頂点の削除
 					preV->SetNext(selectedV->GetNext());
 					//頂点数の再設定
 					taisyouS->SetCount(taisyouS->GetCount() - 1);
@@ -521,13 +437,6 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 						for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
 							for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 								if (checkNaigai(nowS, nowV->GetX(), nowV->GetY())) {
-									//内外判定がtrueの時
-
-									//頂点の数を戻す
-									taisyouS->SetCount(taisyouS->GetCount() + 1);
-									//選択した頂点をリストに戻す
-									preV->SetNext(selectedV);
-									//内外判定に入ったフラグ
 									ret = true;
 								}
 							}
@@ -537,13 +446,6 @@ void CAdminControl::insdelV(double x, double y, int width, int height)
 						for (CShape* nowS = ShapeHead; nowS->SGetNext() != NULL; nowS = nowS->SGetNext()) {
 							for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 								if (checkNaigai2(nowS, nowV->GetX(), nowV->GetY())) {
-									//内外判定がtrueの時
-
-									//頂点の数を戻す
-									taisyouS->SetCount(taisyouS->GetCount() + 1);
-									//選択した頂点をリストに戻す
-									preV->SetNext(selectedV);
-									//内外判定に入ったフラグ
 									ret = true;
 								}
 							}
@@ -1045,26 +947,55 @@ CVertex* CAdminControl::CheckSameVertex()
 	CVertex* MostCloseV = NULL;
 	CShape* now = ShapeHead;
 	for (; now != NULL; now = now->SGetNext()) {
-		for (CVertex* nowV = now->GetSHead()->GetNext(); nowV != NULL; nowV = nowV->GetNext()) {
-			if (CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X,World_Y) < 0.03) {
-				if (minEuclid == NULL) {														//minEuclidに何も入っていない場合はそれを入れる
-					minEuclid = CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y);
-					if (nowV == now->GetSHead() && now->GetClosed()) {
-						while (nowV->GetNext() == NULL) {
-							nowV = nowV->GetNext();
-						}
-					}
-					MostCloseV = nowV;
-				}
-				else {
-					if (minEuclid > CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y)) {
+		//形状が閉じてるときはヘッドの次から回す
+		if (now->GetClosed()) {
+			for (CVertex* nowV = now->GetSHead()->GetNext(); nowV != NULL; nowV = nowV->GetNext()) {
+				if (CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y) < 0.03) {
+					if (minEuclid == NULL) {														//minEuclidに何も入っていない場合はそれを入れる
 						minEuclid = CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y);
 						if (nowV == now->GetSHead() && now->GetClosed()) {
-						while (nowV->GetNext() == NULL) {
-							nowV = nowV->GetNext();
+							while (nowV->GetNext() == NULL) {
+								nowV = nowV->GetNext();
+							}
+						}
+						MostCloseV = nowV;
+					}
+					else {
+						if (minEuclid > CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y)) {
+							minEuclid = CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y);
+							if (nowV == now->GetSHead() && now->GetClosed()) {
+								while (nowV->GetNext() == NULL) {
+									nowV = nowV->GetNext();
+								}
+							}
+							MostCloseV = nowV;
 						}
 					}
+				}
+			}
+		}
+		else {
+			for (CVertex* nowV = now->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+				if (CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y) < 0.03) {
+					if (minEuclid == NULL) {														//minEuclidに何も入っていない場合はそれを入れる
+						minEuclid = CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y);
+						if (nowV == now->GetSHead() && now->GetClosed()) {
+							while (nowV->GetNext() == NULL) {
+								nowV = nowV->GetNext();
+							}
+						}
 						MostCloseV = nowV;
+					}
+					else {
+						if (minEuclid > CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y)) {
+							minEuclid = CM.euclid2p(nowV->GetX(), nowV->GetY(), World_X, World_Y);
+							if (nowV == now->GetSHead() && now->GetClosed()) {
+								while (nowV->GetNext() == NULL) {
+									nowV = nowV->GetNext();
+								}
+							}
+							MostCloseV = nowV;
+						}
 					}
 				}
 			}
