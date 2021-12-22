@@ -90,6 +90,8 @@ public:
 	void SetBasePoint(double x, double y, int width, int height);
 	//Šî“_‚Ì•Ô‹p
 	bool GetBasePoint();
+	//Œ`ó‚ª•Â‚¶‚Ä‚¢‚é‚©‚ğ•Ô‚·
+	bool GetHeadShapeClosed();
 };
 
 

@@ -245,6 +245,10 @@ void CWinOGLView::OnEditMode()
 	else if (AC.EditFlag == true) {
 		AC.EditFlag = false;
 	}
+
+	if (!AC.GetHeadShapeClosed()) {
+		AC.EditFlag = false;
+	}
 	RedrawWindow();
 }
 

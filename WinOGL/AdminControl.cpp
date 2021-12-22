@@ -544,6 +544,14 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 		//ShapeHeadがNULLでないとき
 		else
 		{
+			//for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+			//	for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+			//		if()
+			//		}
+			//	}
+			//}
+
+			//}
 			if (ShapeHead->GetClosed()) {					//ShapeHead（最新のShapeが閉じているかを判定）				
 				if (!checkNaigai(NULL, World_X, World_Y)) {
 					CShape* New = new CShape();					//閉じているときに新しいShapeを生成しクリック座標を登録
@@ -1115,6 +1123,16 @@ bool CAdminControl::GetBasePoint() {
 	}
 	else {
 		return false;
+	}
+}
+
+bool CAdminControl::GetHeadShapeClosed()
+{
+	if (ShapeHead == NULL || !ShapeHead->GetClosed()) {
+		return false;
+	}
+	else {
+		return true;
 	}
 }
 
