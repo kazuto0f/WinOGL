@@ -38,6 +38,8 @@ public:
 
 	//closedにする
 	void SetClosed();
+	//notclosedにする
+	void SetNotClosed();
 
 	//頂点ヘッドを設定
 	void SetShead(CVertex* v);
@@ -71,6 +73,9 @@ public:
 
 	//図形の描画
 	void DrawShape(float R,float G,float B);
+
+	//面の描画
+	void DrawMen(float R, float G, float B);
 
 	//点をスタート位置に設定
 	void SetStartPos();

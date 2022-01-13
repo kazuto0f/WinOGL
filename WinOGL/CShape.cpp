@@ -47,6 +47,11 @@ void CShape::SetClosed()
 	}
 }
 
+void CShape::SetNotClosed()
+{
+	closed = false;
+}
+
 void CShape::SetShead(CVertex* v)
 {
 	Vertex_head = v;
@@ -152,11 +157,57 @@ void CShape::DrawShape(float R, float G, float B)
 	}
 }
 
+
+
+//面の描画
+void CShape::DrawMen(float R, float G, float B)
+{
+	glColor3f(R, G, B);
+	glPointSize(6);
+
+	if (this->GetClosed()) {
+		CVertex* froV = Vertex_head;	
+		CVertex* midV = froV->GetNext();
+		CVertex* endV = midV->GetNext();	
+
+		/*double tx = Vertex_head->GetX();
+		double ty = Vertex_head->GetY();
+		for (CVertex* V = Vertex_head->GetNext(); V != NULL; V = V->GetNext()) {
+			tx += V->GetX();
+			ty += V->GetY();
+		}
+		tx = tx / this->GetCount();
+		ty = ty / this->GetCount();
+
+		while (nowV->GetNext() != NULL) {
+			glBegin(GL_POLYGON);
+			glVertex2f(nowV->GetX(),nowV->GetY());
+			glVertex2f(nowV->GetNext()->GetX(), nowV->GetNext()->GetY());
+			glVertex2f(tx, ty);
+			glEnd();
+			preV = nowV;
+			nowV = nowV->GetNext();
+		}*/
+
+		glBegin(GL_POLYGON);
+		while (endV != NULL) {
+			glVertex2f(froV->GetX(), froV->GetY());
+			glVertex2f(midV->GetX(), midV->GetY());
+			glVertex2f(endV->GetX(), endV->GetY());
+			froV = midV;
+			midV = endV;
+			endV = endV->GetNext();
+		}
+		glEnd();
+	}
+}
+
 //点をスタート位置に設定
 void CShape::SetStartPos()
 {
 	Vertex_head->SetXY(Start->GetX(), Start->GetY());
 }
+
 //点をスタート位置に設定
 void CShape::SetStart(CVertex* v)
 {
@@ -169,42 +220,6 @@ void CShape::ChangeStart(CVertex* n)
 	Start = n;
 }
 
-//交差判定
-/*bool CShape::CheckCrossVertex(double click_x, double click_y)
-{
-	CVertex NewV;
-	NewV.SetXY(click_x, click_y);
-	CVect a;
-	CVect a1;
-	CVect a2;
-	CVect b = CM.CalcVect(Vertex_head, &NewV);
-	CVect b1;
-	CVect b2;
-	
-	if (count > 2) {
-		CVertex* nowV = Vertex_head->GetNext();
-		CVertex* preV = nowV->GetNext();
-		for (; preV != NULL; preV = preV->GetNext()) {
-			if (NewV.GetX() == preV->GetX()&&NewV.GetY() == preV->GetY()) continue;
-			a = CM.CalcVect(preV, nowV);
-			a1 = CM.CalcVect(preV, Vertex_head);
-			a2 = CM.CalcVect(preV, &NewV);
-			b1 = CM.CalcVect(Vertex_head, preV);	
-			b2 = CM.CalcVect(Vertex_head, nowV);
-
-			double ca_1 = CM.calcGaiseki(a, a1);
-			double ca_2 = CM.calcGaiseki(a, a2);
-			double cb_1 = CM.calcGaiseki(b, b1);
-			double cb_2 = CM.calcGaiseki(b, b2);
-
-			if (ca_1 * ca_2 <= 0 && cb_1 * cb_2 <= 0) {
-				return true;
-			}
-			nowV = nowV->GetNext();
-		}
-	}
-	return false;
-}*/
 
 bool CShape::CheckCrossVertex(double sv_x, double sv_y, double ev_x, double ev_y)
 {

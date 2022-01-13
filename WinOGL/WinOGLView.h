@@ -63,6 +63,8 @@ public:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+//	afx_msg void OnUpdateAlldelete(CCmdUI* pCmdUI);
+	afx_msg void OnAlldelete();
 };
 
 #ifndef _DEBUG  // WinOGLView.cpp のデバッグ バージョン

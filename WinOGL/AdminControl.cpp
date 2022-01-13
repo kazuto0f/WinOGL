@@ -62,7 +62,7 @@ void CAdminControl::OnDraw() {
 			glEnd();
 		}
 		if (selectedS != NULL) {
-			selectedS->DrawShape(0.0, 1.0, 0.0);
+			DrawSurface(selectedS, 1.0, 0.0, 0.0);
 		}
 		if (selectedL != NULL) {
 			glBegin(GL_LINES);
@@ -78,14 +78,6 @@ void CAdminControl::OnDraw() {
 			glEnd();
 		}
 	}
-	//else {	//editFlagがオフの時選択を解除
-	//	selectedV = NULL;
-	//	selectedS = NULL;
-	//	selectedL = NULL;
-	//	/*if (ShapeHead != NULL || selectedS->GetBasePoint() != NULL) {
-	//		delete selectedS->GetBasePoint();
-	//	}*/
-//}
 }
 
 void CAdminControl::OnUp(double x, double y, int width, int height)
@@ -844,6 +836,10 @@ void CAdminControl::FreeShape()
 	}
 }
 
+void CAdminControl::FreeShape(CShape s)
+{
+}
+
 
 //Vertexが初めの点と一致するか
 void CAdminControl::CheckClosed()
@@ -1134,6 +1130,84 @@ bool CAdminControl::GetHeadShapeClosed()
 	else {
 		return true;
 	}
+}
+
+//全削除（リセット）
+void CAdminControl::Reset()
+{
+	FreeShape();
+}
+
+//形状のコピー
+void CAdminControl::ShapeCopy(CShape* taisyouS)
+{
+	for (CVertex* nowV = taisyouS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+		CopyShape.SSetXY(nowV->GetX(), nowV->GetY());
+	}
+	
+	if (taisyouS->GetClosed()) {
+		CopyShape.SetClosed();
+	}
+
+	CopyShape.SetCount(taisyouS->GetCount());
+}
+
+//面の描画
+void CAdminControl::DrawSurface(CShape* taisyouS, double r, double g, double b)
+{
+	glColor3f(r, g, b);
+	glPointSize(6);
+
+	ShapeCopy(taisyouS);
+
+	while(CopyShape.GetCount() > 4) {
+		CVertex* froV = CopyShape.GetSHead();
+		CVertex* midV = froV->GetNext();
+		CVertex* endV = midV->GetNext();
+
+		while(endV != NULL && midV != NULL && froV != NULL){
+
+			//3点間の重心を計算
+			double tx = froV->GetX() + midV->GetX() + endV->GetX();
+			double ty = froV->GetY() + midV->GetY() + endV->GetY();
+			tx = tx / 3;
+			ty = ty / 3;
+
+			//その重心が形状の内部にあるかチェック
+			if (checkNaigai(&CopyShape, tx, ty)) {
+				glBegin(GL_POLYGON);
+				glVertex2f(froV->GetX(), froV->GetY());
+				glVertex2f(midV->GetX(), midV->GetY());
+				glVertex2f(endV->GetX(), endV->GetY());
+				glEnd();
+
+				//塗り終えた部分を形状から削除
+				froV->SetNext(endV);
+				delete midV;
+
+				CopyShape.SetCount(CopyShape.GetCount() - 1);
+			}
+			if (CopyShape.GetCount() < 4) {
+				break;
+			}
+			froV = froV->GetNext();
+			midV = froV->GetNext();
+			endV = midV->GetNext();
+		}
+	}
+	if (CopyShape.GetCount() == 4) {
+		CVertex* froV = CopyShape.GetSHead();
+		CVertex* midV = froV->GetNext();
+		CVertex* endV = midV->GetNext();
+
+		glBegin(GL_POLYGON);
+		glVertex2f(froV->GetX(), froV->GetY());
+		glVertex2f(midV->GetX(), midV->GetY());
+		glVertex2f(endV->GetX(), endV->GetY());
+		glEnd();
+	}
+	
+
 }
 
 

@@ -34,6 +34,8 @@ public:
 	//Shapeの解放
 	void FreeShape();
 
+	void FreeShape(CShape);
+
 	//Vertexが初めの点と位置するか
 	void CheckClosed();
 	
@@ -55,6 +57,7 @@ private:
 private:
 	CShape Shape;
 	CShape* ShapeHead;
+	CShape CopyShape;
 	CMath CM;
 	int Scount;
 
@@ -92,6 +95,12 @@ public:
 	bool GetBasePoint();
 	//形状が閉じているかを返す
 	bool GetHeadShapeClosed();
+	//全削除（リセット）
+	void Reset();
+	//形状のコピー
+	void ShapeCopy(CShape* taisyouS);
+	//面の描画
+	void DrawSurface(CShape* taisoyuS,double r, double g, double b);
 };
 
 

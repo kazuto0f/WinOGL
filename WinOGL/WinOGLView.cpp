@@ -39,6 +39,8 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEHWHEEL()
 	ON_WM_MOUSEWHEEL()
+//	ON_UPDATE_COMMAND_UI(ID_ALLDELETE, &CWinOGLView::OnUpdateAlldelete)
+	ON_COMMAND(ID_ALLDELETE, &CWinOGLView::OnAlldelete)
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
@@ -396,4 +398,12 @@ BOOL CWinOGLView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 		RedrawWindow();
 	}
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+
+void CWinOGLView::OnAlldelete()
+{
+	AC.Reset();
+	AC.EditFlag = false;
+	RedrawWindow();
 }
