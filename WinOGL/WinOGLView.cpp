@@ -77,10 +77,10 @@ void CWinOGLView::OnDraw(CDC* pDC)
 	AC.OnDraw();
 
 	glFlush();
+
 	SwapBuffers(pDC->m_hDC);
 
 	wglMakeCurrent(pDC->m_hDC, NULL);
-
 }
 
 
