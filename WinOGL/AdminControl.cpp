@@ -14,10 +14,13 @@ CAdminControl::CAdminControl()
 	Scount = 0;
 	AxisFlag = false;
 	EditFlag = false;
+	Surface = NULL;
 	selectedV = NULL;
 	selectedS = NULL;
 	selectedL = NULL;
 	basePoint = NULL;
+	Pre_Cursor_Pos_X = 0;
+	Pre_Cursor_Pos_Y = 0;
 }
 
 CAdminControl::~CAdminControl()
@@ -32,7 +35,7 @@ CAdminControl::~CAdminControl()
 
 void CAdminControl::OnDraw() {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT /* | GL_DEPTH_BUFFER_BIT */);
+	glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT );
 
 	CShape* nowS = ShapeHead;
 	CShape* preS = ShapeHead;
@@ -50,19 +53,26 @@ void CAdminControl::OnDraw() {
 	// AxisFlagがtrueのとき座標軸を描画する
 	if (AxisFlag) {
 		DrawAxis();
+
+
+	}
+
+	if (Surface) {
+		DrawSurface();
 	}
 
 	//EditFlagがtrueの時選択した頂点の描画をする
 	if (EditFlag) {
 		if (selectedV != NULL) {
 			glColor3f(1.0, 0.0, 0.0);
-			glPointSize(6);
+			glPointSize(8);
 			glBegin(GL_POINTS);
 			glVertex2f(selectedV->GetX(), selectedV->GetY());
 			glEnd();
 		}
 		if (selectedS != NULL) {
-			DrawSurface(selectedS, 1.0, 0.0, 0.0);
+			selectedS->DrawShape(1.0, 0.0, 0.0);
+			
 		}
 		if (selectedL != NULL) {
 			glBegin(GL_LINES);
@@ -493,9 +503,12 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 		World_Y = World_Y * ((double)height / (double)width);
 	}
 	
+	//AxisFlagがtrueの時
+	if (AxisFlag) {
 
+	}
 	//EditFlagがtrueの時選択処理
-	if (EditFlag) 
+	else if (EditFlag) 
 	{
 		selectedV = NULL;
 		selectedL = NULL;
@@ -534,7 +547,7 @@ void CAdminControl::OnClick(double x,double y,int width,int height)
 			ShapeHead = New;
 		}
 		//ShapeHeadがNULLでないとき
-		else
+		else if(Surface != true)
 		{
 			//for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
 			//	for (CVertex* nowV = nowS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
@@ -1141,6 +1154,10 @@ void CAdminControl::Reset()
 //形状のコピー
 void CAdminControl::ShapeCopy(CShape* taisyouS)
 {
+	CopyShape.ShapeFree();
+	CopyShape.SetCount(NULL);
+	CopyShape.SetNotClosed();
+
 	for (CVertex* nowV = taisyouS->GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
 		CopyShape.SSetXY(nowV->GetX(), nowV->GetY());
 	}
@@ -1152,9 +1169,18 @@ void CAdminControl::ShapeCopy(CShape* taisyouS)
 	CopyShape.SetCount(taisyouS->GetCount());
 }
 
-//面の描画
-void CAdminControl::DrawSurface(CShape* taisyouS, double r, double g, double b)
+void CAdminControl::DrawSurface()
 {
+	for (CShape* nowS = ShapeHead; nowS != NULL; nowS = nowS->SGetNext()) {
+		DrawSurfacePre(nowS, 1.0, 0.0, 0.0);
+	}
+}
+
+//面の描画
+void CAdminControl::DrawSurfacePre(CShape* taisyouS, double r, double g, double b)
+{
+	bool ret = false;
+
 	glColor3f(r, g, b);
 	glPointSize(6);
 
@@ -1167,14 +1193,48 @@ void CAdminControl::DrawSurface(CShape* taisyouS, double r, double g, double b)
 
 		while(endV != NULL && midV != NULL && froV != NULL){
 
+			ret = false;
+
+			CopyShape1.ShapeFree();
+			CopyShape1.SetCount(NULL);
+			CopyShape1.SetNotClosed();
+
+			CopyShape1.SSetXY(froV->GetX(), froV->GetY());
+			CopyShape1.SSetXY(midV->GetX(), midV->GetY());
+			CopyShape1.SSetXY(endV->GetX(), endV->GetY());
+			CopyShape1.SSetXY(froV->GetX(), froV->GetY());
+			CopyShape1.SetClosed();
+
 			//3点間の重心を計算
 			double tx = froV->GetX() + midV->GetX() + endV->GetX();
 			double ty = froV->GetY() + midV->GetY() + endV->GetY();
 			tx = tx / 3;
 			ty = ty / 3;
 
+			//内外判定
+			for (CVertex* nowV = CopyShape.GetSHead(); nowV != NULL; nowV = nowV->GetNext()) {
+
+				if (nowV->GetX() == froV->GetX() && nowV->GetY() == froV->GetY()) {}
+				else if( nowV->GetX() == midV->GetX() && nowV->GetY() == midV->GetY() ){}
+				else if( nowV->GetX() == endV->GetX() && nowV->GetY() == endV->GetY()){}
+				else{
+					if(CopyShape1.VCheckNaiGai(nowV->GetX(), nowV->GetY())) {
+						ret = true;
+						break;
+					}
+				}
+			}
+
+			//交差判定
+			if (taisyouS->CheckCrossVertex(froV->GetX(), froV->GetY(), midV->GetX(), midV->GetY()) ||
+				taisyouS->CheckCrossVertex(midV->GetX(), midV->GetY(), endV->GetX(), endV->GetY()) ||
+				taisyouS->CheckCrossVertex(endV->GetX(), endV->GetY(), froV->GetX(), froV->GetY())) {
+				ret = true;
+			}
+
+
 			//その重心が形状の内部にあるかチェック
-			if (checkNaigai(&CopyShape, tx, ty)) {
+			if (checkNaigai(&CopyShape, tx, ty) && ret == false) {
 				glBegin(GL_POLYGON);
 				glVertex2f(froV->GetX(), froV->GetY());
 				glVertex2f(midV->GetX(), midV->GetY());
@@ -1186,8 +1246,10 @@ void CAdminControl::DrawSurface(CShape* taisyouS, double r, double g, double b)
 				delete midV;
 
 				CopyShape.SetCount(CopyShape.GetCount() - 1);
+
+				break;
 			}
-			if (CopyShape.GetCount() < 4) {
+			if (CopyShape.GetCount() < 5) {
 				break;
 			}
 			froV = froV->GetNext();
@@ -1208,6 +1270,34 @@ void CAdminControl::DrawSurface(CShape* taisyouS, double r, double g, double b)
 	}
 	
 
+}
+
+//視点の移動
+void CAdminControl::MovePerspective(double x, double y, int width, int height)
+{
+	if (AxisFlag) {
+		//デバイスの座標からworld座標系に変換
+		Cursor_Pos_X = (x - 0.5) * 2;
+		Cursor_Pos_Y = (y - 0.5) * 2;
+
+		//画面の比からworld座標を修正
+		if (width > height) {
+			Cursor_Pos_X = Cursor_Pos_X * ((double)width / (double)height);
+		}
+		else {
+			Cursor_Pos_Y = Cursor_Pos_Y * ((double)height / (double)width);
+		}
+		//glLoadIdentity();
+
+		x = x + (x - Pre_Cursor_Pos_X);
+		y = y + (y - Pre_Cursor_Pos_Y);
+
+		glTranslatef(5, 0.0, 0.0);
+		//glScalef(2.0, 0, 0);
+
+		Pre_Cursor_Pos_X = Cursor_Pos_X;
+		Pre_Cursor_Pos_Y = Cursor_Pos_Y;
+	}
 }
 
 

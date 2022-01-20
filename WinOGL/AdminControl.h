@@ -58,6 +58,7 @@ private:
 	CShape Shape;
 	CShape* ShapeHead;
 	CShape CopyShape;
+	CShape CopyShape1;
 	CMath CM;
 	int Scount;
 
@@ -82,6 +83,7 @@ public:
 	//メニューやボタンの状態を管理する変数
 	bool AxisFlag;
 	bool EditFlag;
+	bool Surface;
 	CVertex* CheckSameVertex();
 	// //面(shape)の選択の処理
 	void CheckShapeSelect();
@@ -100,7 +102,9 @@ public:
 	//形状のコピー
 	void ShapeCopy(CShape* taisyouS);
 	//面の描画
-	void DrawSurface(CShape* taisoyuS,double r, double g, double b);
+	void DrawSurface();
+	void DrawSurfacePre(CShape* taisoyuS,double r, double g, double b);
+	void MovePerspective(double x, double y, int width, int height);
 };
 
 

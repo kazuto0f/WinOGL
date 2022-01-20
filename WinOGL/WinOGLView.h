@@ -65,6 +65,8 @@ public:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 //	afx_msg void OnUpdateAlldelete(CCmdUI* pCmdUI);
 	afx_msg void OnAlldelete();
+	afx_msg void OnPaint();
+	afx_msg void OnUpdatePaint(CCmdUI* pCmdUI);
 };
 
 #ifndef _DEBUG  // WinOGLView.cpp のデバッグ バージョン

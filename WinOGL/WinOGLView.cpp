@@ -41,6 +41,8 @@ BEGIN_MESSAGE_MAP(CWinOGLView, CView)
 	ON_WM_MOUSEWHEEL()
 //	ON_UPDATE_COMMAND_UI(ID_ALLDELETE, &CWinOGLView::OnUpdateAlldelete)
 	ON_COMMAND(ID_ALLDELETE, &CWinOGLView::OnAlldelete)
+	ON_COMMAND(ID_PAINT, &CWinOGLView::OnPaint)
+	ON_UPDATE_COMMAND_UI(ID_PAINT, &CWinOGLView::OnUpdatePaint)
 END_MESSAGE_MAP()
 
 // CWinOGLView コンストラクション/デストラクション
@@ -124,9 +126,9 @@ void CWinOGLView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	AC.OnClick(Sx, Sy, width, height);
 
-	RedrawWindow();
-
 	CView::OnLButtonDown(nFlags, point);
+
+	RedrawWindow();
 }
 
 //左マウスボタンリリース関数
@@ -243,15 +245,27 @@ void CWinOGLView::OnEditMode()
 {
 	if (AC.EditFlag == false) {
 		AC.EditFlag = true;
+		AC.Surface = false;
 	}
 	else if (AC.EditFlag == true) {
 		AC.EditFlag = false;
 	}
 
-	if (!AC.GetHeadShapeClosed()) {
+	if (!AC.GetHeadShapeClosed() || AC.AxisFlag == true) {
 		AC.EditFlag = false;
 	}
 	RedrawWindow();
+}
+
+void CWinOGLView::OnUpdateEditMode(CCmdUI* pCmdUI)
+{
+	if (AC.EditFlag == true) {
+		pCmdUI->SetCheck(true);
+	}
+	else {
+		pCmdUI->SetCheck(false);
+		AC.resetSelect();
+	}
 }
 
 
@@ -264,6 +278,9 @@ void CWinOGLView::OnXyz()
 		AC.AxisFlag = true;
 	}
 	else if (AC.AxisFlag == true) {
+		AC.AxisFlag = false;
+	}
+	if (!AC.GetHeadShapeClosed()) {
 		AC.AxisFlag = false;
 	}
 	RedrawWindow();
@@ -282,17 +299,6 @@ void CWinOGLView::OnUpdateXyz(CCmdUI* pCmdUI)
 }
 
 
-void CWinOGLView::OnUpdateEditMode(CCmdUI* pCmdUI)
-{
-	if (AC.EditFlag == true) {
-		pCmdUI->SetCheck(true);
-	}
-	else {
-		pCmdUI->SetCheck(false);
-		AC.resetSelect();
-	}
-}
-
 
 //マウスを動かすと呼ばれる
 void CWinOGLView::OnMouseMove(UINT nFlags, CPoint point)
@@ -310,6 +316,8 @@ void CWinOGLView::OnMouseMove(UINT nFlags, CPoint point)
 		AC.OnUp(Sx, Sy, width, height);
 
 		AC.mouseMove(Sx, Sy, width, height);
+
+		AC.MovePerspective(Sx, Sy, width, height);
 
 		RedrawWindow();
 
@@ -406,4 +414,31 @@ void CWinOGLView::OnAlldelete()
 	AC.Reset();
 	AC.EditFlag = false;
 	RedrawWindow();
+}
+
+
+void CWinOGLView::OnPaint()
+{
+	if (AC.Surface == false) {
+		AC.Surface = true;
+		AC.EditFlag = false;
+	}
+	else if (AC.Surface == true) {
+		AC.Surface = false;
+	}
+	if (!AC.GetHeadShapeClosed()) {
+		AC.Surface = false;
+	}
+	RedrawWindow();
+}
+
+
+void CWinOGLView::OnUpdatePaint(CCmdUI* pCmdUI)
+{
+	if (AC.Surface == true) {
+		pCmdUI->SetCheck(true);
+	}
+	else {
+		pCmdUI->SetCheck(false);
+	}
 }
