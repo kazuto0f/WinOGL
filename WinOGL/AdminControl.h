@@ -57,8 +57,8 @@ private:
 private:
 	CShape Shape;
 	CShape* ShapeHead;
-	CShape CopyShape;
-	CShape CopyShape1;
+	CShape CopyShape;	//形状のコピーを入れる
+	CShape CopyShape1;	//面塗の際の3角形を入れる
 	CMath CM;
 	int Scount;
 
@@ -84,6 +84,10 @@ public:
 	bool AxisFlag;
 	bool EditFlag;
 	bool Surface;
+	//視点の変更を行う必要があるのかを判別するフラグ
+	bool NeedPerspectiveChange;
+	float Perspect_X;
+	float Perspect_Y;
 	CVertex* CheckSameVertex();
 	// //面(shape)の選択の処理
 	void CheckShapeSelect();
@@ -104,7 +108,10 @@ public:
 	//面の描画
 	void DrawSurface();
 	void DrawSurfacePre(CShape* taisoyuS,double r, double g, double b);
-	void MovePerspective(double x, double y, int width, int height);
+	//視点移動
+	void SetPerspectivePos(double x, double y, int width, int height);
+	void ResetPerspectivePos();
+	void MovePerspective();
 };
 
 

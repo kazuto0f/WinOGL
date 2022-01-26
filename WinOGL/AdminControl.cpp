@@ -15,12 +15,15 @@ CAdminControl::CAdminControl()
 	AxisFlag = false;
 	EditFlag = false;
 	Surface = NULL;
+	NeedPerspectiveChange = false;
 	selectedV = NULL;
 	selectedS = NULL;
 	selectedL = NULL;
 	basePoint = NULL;
 	Pre_Cursor_Pos_X = 0;
 	Pre_Cursor_Pos_Y = 0;
+	Perspect_X = 0;
+	Perspect_Y = 0;
 }
 
 CAdminControl::~CAdminControl()
@@ -53,9 +56,17 @@ void CAdminControl::OnDraw() {
 	// AxisFlagがtrueのとき座標軸を描画する
 	if (AxisFlag) {
 		DrawAxis();
-
+		if (NeedPerspectiveChange) {
+			glLoadIdentity();
+			glTranslatef(Perspect_X, Perspect_Y, 0.0);
+			NeedPerspectiveChange = false;
+		}
 
 	}
+	else {
+		glLoadIdentity();
+	}
+	
 
 	if (Surface) {
 		DrawSurface();
@@ -1272,32 +1283,39 @@ void CAdminControl::DrawSurfacePre(CShape* taisyouS, double r, double g, double 
 
 }
 
-//視点の移動
-void CAdminControl::MovePerspective(double x, double y, int width, int height)
+//視点の位置をセット
+void CAdminControl::SetPerspectivePos(double x, double y, int width, int height)
 {
 	if (AxisFlag) {
 		//デバイスの座標からworld座標系に変換
-		Cursor_Pos_X = (x - 0.5) * 2;
-		Cursor_Pos_Y = (y - 0.5) * 2;
+		x = (x - 0.5) * 2;
+		y = (y - 0.5) * 2;
 
 		//画面の比からworld座標を修正
 		if (width > height) {
-			Cursor_Pos_X = Cursor_Pos_X * ((double)width / (double)height);
+			x = x * ((double)width / (double)height);
 		}
 		else {
-			Cursor_Pos_Y = Cursor_Pos_Y * ((double)height / (double)width);
+			y = y * ((double)height / (double)width);
 		}
 		//glLoadIdentity();
 
-		x = x + (x - Pre_Cursor_Pos_X);
-		y = y + (y - Pre_Cursor_Pos_Y);
+		Perspect_X =  x;
+		Perspect_Y =  y;
 
-		glTranslatef(5, 0.0, 0.0);
-		//glScalef(2.0, 0, 0);
-
-		Pre_Cursor_Pos_X = Cursor_Pos_X;
-		Pre_Cursor_Pos_Y = Cursor_Pos_Y;
+		NeedPerspectiveChange = true;
 	}
+}
+
+void CAdminControl::ResetPerspectivePos()
+{
+
+}
+
+//視点の移動
+void CAdminControl::MovePerspective()
+{
+	glLoadIdentity();
 }
 
 

@@ -279,6 +279,7 @@ void CWinOGLView::OnXyz()
 	}
 	else if (AC.AxisFlag == true) {
 		AC.AxisFlag = false;
+		AC.ResetPerspectivePos();
 	}
 	if (!AC.GetHeadShapeClosed()) {
 		AC.AxisFlag = false;
@@ -317,7 +318,7 @@ void CWinOGLView::OnMouseMove(UINT nFlags, CPoint point)
 
 		AC.mouseMove(Sx, Sy, width, height);
 
-		AC.MovePerspective(Sx, Sy, width, height);
+		AC.SetPerspectivePos(Sx, Sy, width, height);
 
 		RedrawWindow();
 

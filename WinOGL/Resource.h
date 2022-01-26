@@ -12,14 +12,16 @@
 #define ID_32779                        32779
 #define ID_SHAPECOPY                    32780
 #define ID_PAINT                        32782
-#define ID_BUTTON32783                  32783
+#define ID_32784                        32784
+#define ID_ROTATE                       32785
+#define ID_BUTTON32787                  32787
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32784
+#define _APS_NEXT_COMMAND_VALUE         32788
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
